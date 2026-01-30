@@ -8,6 +8,9 @@ include(ExternalProject)
 
 set(DEPS_DESTDIR ${CMAKE_BINARY_DIR}/static-deps)
 set(DEPS_SOURCEDIR ${CMAKE_BINARY_DIR}/static-deps-sources)
+set(DEPS_CMAKE_MODS ${DEPS_DESTDIR}/cmake-static-modules)
+file(MAKE_DIRECTORY ${DEPS_CMAKE_MODS})
+list(INSERT CMAKE_MODULE_PATH 0 ${DEPS_CMAKE_MODS})
 
 include_directories(BEFORE SYSTEM ${DEPS_DESTDIR}/include)
 
@@ -32,10 +35,36 @@ function(sessiondep_expand_urls output source_file)
 endfunction()
 
 
-function(sessiondep_add_static_target target ext_target libname)
+# Add a static imported target for a single library.  If the static build produces just one library
+# then this can be the final `libsession_ext_PKG` target.  For a multi-library output you need
+# one of these calls per produced output, and then use `sessiondep_bundle()` to produce the
+# final required target from multiple targets.
+#
+# After a sessiondep_build_external(mypkg ...) that produces a single static library lib/libmypkg.a
+# you would typically call this as follows to produce the proper target needed for satisfy a static
+# dep:
+#
+#     sessiondep_static_target(sessiondep_ext_mypkg mypkg libmypkg.a)
+#
+# For a multi-lib static build producing lib/libmypkg.a and lib/libmypkg-foo.a, there are two
+# options.  The first is just to export a single target that links to everything; to do that use
+# something like:
+#
+#     sessiondep_static_target(mypkg_base mypkg libmypkg.a)
+#     sessiondep_static_target(mypkg_foo mypkg libmypkg-foo.a)
+#     sessiondep_bundle(mypkg mypkg_base mypkg_foo)
+#
+# which will expose a single sessiondep::mypkg target that links to both libraries.
+#
+# However if these are independent and can be linked separately (typically with independent
+# pkgconfig files), you may not want such a bundle so that the program can choose with components it
+# links to.  See deps/nettle.cmake and deps/libngtcp2.cmake for examples of this.
+#
+# You can append other cmake target dependencies (e.g. `sessiondep::xyz`) after the static library
+# filename to set up the proper cmake dependency chain.
+function(sessiondep_static_target target ext_target libname)
   add_library(${target} STATIC IMPORTED GLOBAL)
-  add_dependencies(${target} ${ext_target})
-  target_link_libraries(session_router_static_deps INTERFACE ${target})
+  add_dependencies(${target} sessiondep_${ext_target}_external)
   set_target_properties(${target} PROPERTIES
     IMPORTED_LOCATION ${DEPS_DESTDIR}/lib/${libname}
   )
@@ -43,6 +72,30 @@ function(sessiondep_add_static_target target ext_target libname)
     target_link_libraries(${target} INTERFACE ${ARGN})
   endif()
 endfunction()
+
+
+# For static builds that link to multiple targets, this helper function is provided to combine them;
+# see example above.
+#
+# The first argument, `name`, should be the same as the script filename (e.g. "libngtcp2" for
+# deps/libngtcp2.cmake).  `sessiondep_ext_` will be prepended to the target name automatically.  Any
+# remaining arguments are cmake targets to link to the created interface.
+function(sessiondep_bundle name)
+    add_library(sessiondep_ext_${name} INTERFACE)
+    target_link_libraries(sessiondep_ext_${name} INTERFACE ${ARGN})
+endfunction()
+
+
+# Creates a FindXXX.cmake in the module search path, typically loaded with static build items, so
+# that later calls to find_package(XXX) will load from there instead of trying to load a system one.
+#
+# For an example see the usage in deps/gnutls.cmake.
+function(sessiondep_find_package_override NAME VERSION INCLUDE_DIR LIBRARY LIBRARIES)
+    configure_file(${CMAKE_CURRENT_LIST_DIR}/FindXXX.cmake.template
+        ${DEPS_CMAKE_MODS}/Find${NAME}.cmake
+        @ONLY)
+endfunction()
+
 
 
 set(cross_host "")
@@ -153,14 +206,24 @@ function(sessiondep_build_external target)
     set(install INSTALL_COMMAND ${arg_INSTALL_COMMAND})
   endif()
 
+  set(no_idiotic_extract)
+  if(NOT CMAKE_VERSION VERSION_LESS 3.24)
+    # CMake 3.24 ExternalProject changed the default to "don't extract timestamps" by default that
+    # wipes out all the timestamps of extracted packages, breaking pretty much all autotools
+    # packages.  That's a exceptionally brilliant default for an "external project" builder, thanks
+    # so much CMake!  (see cmake issue #24003)
+    set(no_idiotic_extract DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
+  endif()
+
   string(TOUPPER "${target}" prefix)
   sessiondep_expand_urls(urls ${${prefix}_SOURCE} ${${prefix}_MIRROR})
-  ExternalProject_Add("sessiondep_ext_${target}"
+  ExternalProject_Add("sessiondep_${target}_external"
     DEPENDS ${arg_DEPENDS}
     BUILD_IN_SOURCE ON
     PREFIX ${DEPS_SOURCEDIR}
     URL ${urls}
     URL_HASH ${${prefix}_HASH}
+    ${no_idiotic_extract}
     DOWNLOAD_NO_PROGRESS ON
     PATCH_COMMAND ${arg_PATCH_COMMAND}
     ${configure}

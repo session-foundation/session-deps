@@ -215,10 +215,32 @@ function(sessiondep_build_external target)
     set(no_idiotic_extract DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
   endif()
 
+  # For any sessiondep::TGT things we have listed in DEPENDS we have to convert to the raw name (if
+  # it exists), because in the sessiondep::TGT form cmake helpfully just assumes things are built
+  # instantly, because god forbid cmake adds a feature without massive gotchas.
+  set(fixed_depends)
+  foreach(dep IN LISTS arg_DEPENDS)
+      if(dep MATCHES "^sessiondep::(.*)")
+          set(tgt "sessiondep_${CMAKE_MATCH_1}_external")
+          if(TARGET ${tgt})
+              list(APPEND fixed_depends "sessiondep_${CMAKE_MATCH_1}_external")
+          else()
+              message(DEBUG "${tgt} not found for ${dep}, probably a secondary target?")
+          endif()
+      else()
+          list(APPEND fixed_depends "${dep}")
+      endif()
+  endforeach()
+
   string(TOUPPER "${target}" prefix)
+
+  if(NOT ${prefix}_SOURCE)
+      message(FATAL_ERROR "Unable to build ${target}: ${prefix}_SOURCE not set")
+  endif()
+
   sessiondep_expand_urls(urls ${${prefix}_SOURCE} ${${prefix}_MIRROR})
   ExternalProject_Add("sessiondep_${target}_external"
-    DEPENDS ${arg_DEPENDS}
+    DEPENDS ${fixed_depends}
     BUILD_IN_SOURCE ON
     PREFIX ${DEPS_SOURCEDIR}
     URL ${urls}

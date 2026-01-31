@@ -13,8 +13,11 @@ session_dep(libunistring 0.9)
 sessiondep_build_external(libidn2
     # Patch out building the tools because they make a compilation with -flto take a very long time:
     PATCH_COMMAND patch -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/libidn2-no-tools.patch
-    CONFIGURE_COMMAND ./configure ${build_host} --disable-shared --disable-doc --prefix=${DEPS_DESTDIR} --with-pic
-        "CC=${deps_cc}" "CXX=${deps_cxx}" "CFLAGS=${deps_CFLAGS}${apple_cflags_arch}" "CXXFLAGS=${deps_CXXFLAGS}${apple_cflags_arch}" ${cross_rc}
+    CONFIGURE_COMMAND ./configure ${build_host} --disable-shared --disable-doc --prefix=${SESSIONDEPS_DESTDIR} --with-pic
+        "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
+        "CFLAGS=${sessiondeps_CFLAGS}${sessiondeps_apple_cflags_arch}"
+        "CXXFLAGS=${sessiondeps_CXXFLAGS}${sessiondeps_apple_cflags_arch}"
+        ${cross_rc}
     DEPENDS sessiondep::libunistring
-    BUILD_BYPRODUCTS ${DEPS_DESTDIR}/lib/libidn2.a ${DEPS_DESTDIR}/include/idn2.h)
+    BUILD_BYPRODUCTS ${SESSIONDEPS_DESTDIR}/lib/libidn2.a ${SESSIONDEPS_DESTDIR}/include/idn2.h)
 sessiondep_static_target(sessiondep_ext_libidn2 libidn2_external libidn2.a sessiondep::libunistring)

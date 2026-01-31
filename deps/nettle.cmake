@@ -10,18 +10,18 @@ set(NETTLE_HASH SHA512=bf37ddd7dca8e78488da2a5286dcf16761d527d620572b42f2ad27bb8
 session_dep(libgmp 6)
 
 sessiondep_build_external(nettle
-    CONFIGURE_COMMAND ./configure ${build_host} --disable-shared --prefix=${DEPS_DESTDIR} --libdir=${DEPS_DESTDIR}/lib
+    CONFIGURE_COMMAND ./configure ${build_host} --disable-shared --prefix=${SESSIONDEPS_DESTDIR} --libdir=${SESSIONDEPS_DESTDIR}/lib
         --enable-pic --disable-openssl --disable-documentation
-        "CC=${deps_cc}" "CXX=${deps_cxx}"
-        "CFLAGS=${deps_CFLAGS}${apple_cflags_arch}" "CXXFLAGS=${deps_CXXFLAGS}${apple_cxxflags_arch}"
-        "CPPFLAGS=-I${DEPS_DESTDIR}/include"
-        "LDFLAGS=-L${DEPS_DESTDIR}/lib${apple_ldflags_arch}"
+        "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
+        "CFLAGS=${sessiondeps_CFLAGS}${sessiondeps_apple_cflags_arch}" "CXXFLAGS=${sessiondeps_CXXFLAGS}${sessiondeps_apple_cxxflags_arch}"
+        "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include"
+        "LDFLAGS=-L${SESSIONDEPS_DESTDIR}/lib${sessiondeps_apple_ldflags_arch}"
 
     DEPENDS sessiondep::libgmp
     BUILD_BYPRODUCTS
-    ${DEPS_DESTDIR}/lib/libnettle.a
-    ${DEPS_DESTDIR}/lib/libhogweed.a
-    ${DEPS_DESTDIR}/include/nettle/version.h
+    ${SESSIONDEPS_DESTDIR}/lib/libnettle.a
+    ${SESSIONDEPS_DESTDIR}/lib/libhogweed.a
+    ${SESSIONDEPS_DESTDIR}/include/nettle/version.h
 )
 
 sessiondep_static_target(sessiondep_ext_nettle nettle_external libnettle.a)

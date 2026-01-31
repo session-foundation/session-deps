@@ -21,17 +21,20 @@ endif()
 
 sessiondep_build_external(gnutls
     ${gnutls_patch_commands}
-    CONFIGURE_COMMAND ./configure ${build_host} --disable-shared --prefix=${DEPS_DESTDIR} --with-pic
+    CONFIGURE_COMMAND ./configure ${build_host} --disable-shared --prefix=${SESSIONDEPS_DESTDIR} --with-pic
         --without-p11-kit --disable-libdane --disable-cxx --without-tpm --without-tpm2 --disable-doc
         --without-zlib --without-brotli --without-zstd --without-libintl-prefix --disable-tests
         --disable-valgrind-tests --disable-full-test-suite --disable-tools
-        "PKG_CONFIG_LIBDIR=${DEPS_DESTDIR}/lib/pkgconfig" "PKG_CONFIG=pkg-config"
-        "CPPFLAGS=-I${DEPS_DESTDIR}/include" "LDFLAGS=-L${DEPS_DESTDIR}/lib${apple_ldflags_arch}"
-        "CC=${deps_cc}" "CXX=${deps_cxx}" "CFLAGS=${deps_CFLAGS}${apple_cflags_arch}" "CXXFLAGS=${deps_CXXFLAGS}${apple_cxxflags_arch}" ${cross_rc}
+        "PKG_CONFIG_LIBDIR=${SESSIONDEPS_DESTDIR}/lib/pkgconfig" "PKG_CONFIG=pkg-config"
+        "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include" "LDFLAGS=-L${SESSIONDEPS_DESTDIR}/lib${sessiondeps_apple_ldflags_arch}"
+        "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
+        "CFLAGS=${sessiondeps_CFLAGS}${sessiondeps_apple_cflags_arch}"
+        "CXXFLAGS=${sessiondeps_CXXFLAGS}${sessiondeps_apple_cxxflags_arch}"
+        ${sessiondeps_cross_rc}
     DEPENDS sessiondep::nettle sessiondep::hogweed sessiondep::libidn2 sessiondep::libtasn1
     BUILD_BYPRODUCTS
-    ${DEPS_DESTDIR}/lib/libgnutls.a
-    ${DEPS_DESTDIR}/include/gnutls/gnutls.h
+    ${SESSIONDEPS_DESTDIR}/lib/libgnutls.a
+    ${SESSIONDEPS_DESTDIR}/include/gnutls/gnutls.h
 )
 sessiondep_static_target(sessiondep_ext_gnutls gnutls_external libgnutls.a
     sessiondep::nettle sessiondep::hogweed sessiondep::libidn2 sessiondep::libtasn1)
@@ -39,9 +42,9 @@ sessiondep_static_target(sessiondep_ext_gnutls gnutls_external libgnutls.a
 sessiondep_find_package_override(
     GnuTLS
     ${GNUTLS_VERSION}
-    ${DEPS_DESTDIR}/include
-    ${DEPS_DESTDIR}/lib/libgnutls.a
-    ${DEPS_DESTDIR}/lib/libgnutls.a)
+    ${SESSIONDEPS_DESTDIR}/include
+    ${SESSIONDEPS_DESTDIR}/lib/libgnutls.a
+    ${SESSIONDEPS_DESTDIR}/lib/libgnutls.a)
 
 if(WIN32)
     target_link_libraries(libsession_ext_gnutls INTERFACE ws2_32 ncrypt crypt32 iphlpapi)

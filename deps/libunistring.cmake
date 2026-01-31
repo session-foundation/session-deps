@@ -9,8 +9,9 @@ set(LIBUNISTRING_HASH SHA512=864d42b1d4ae4941fe5c8327d6726ab8e3a35d2d5f9d25ce485
 
 
 sessiondep_build_external(libunistring
-    CONFIGURE_COMMAND ./configure ${build_host} --disable-shared --prefix=${DEPS_DESTDIR} --with-pic
-        "CC=${deps_cc}" "CXX=${deps_cxx}" "CFLAGS=${deps_CFLAGS}${apple_cflags_arch}" "CXXFLAGS=${deps_CXXFLAGS}${apple_cflags_arch}"
-        "CPPFLAGS=-I${DEPS_DESTDIR}/include" "LDFLAGS=-L${DEPS_DESTDIR}/lib${apple_ldflags_arch}" ${cross_rc}
-    BUILD_BYPRODUCTS ${DEPS_DESTDIR}/lib/libunistring.a ${DEPS_DESTDIR}/include/unistr.h)
+    CONFIGURE_COMMAND ./configure ${build_host} --disable-shared --prefix=${SESSIONDEPS_DESTDIR} --with-pic
+        "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
+        "CFLAGS=${sessiondeps_CFLAGS}${sessiondeps_apple_cflags_arch}" "CXXFLAGS=${sessiondeps_CXXFLAGS}${sessiondeps_apple_cflags_arch}"
+        "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include" "LDFLAGS=-L${SESSIONDEPS_DESTDIR}/lib${sessiondeps_apple_ldflags_arch}" ${cross_rc}
+    BUILD_BYPRODUCTS ${SESSIONDEPS_DESTDIR}/lib/libunistring.a ${SESSIONDEPS_DESTDIR}/include/unistr.h)
 sessiondep_static_target(sessiondep_ext_libunistring libunistring_external libunistring.a)

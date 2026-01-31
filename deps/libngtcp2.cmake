@@ -11,19 +11,21 @@ set(NGTCP2_HASH SHA512=8d621f49561f80242ec1737ac9706adf7525c17e268f84dbb05c21fd9
 session_dep(gnutls 3.7.2)
 
 sessiondep_build_external(ngtcp2
-    CONFIGURE_COMMAND ./configure ${build_host} --prefix=${DEPS_DESTDIR} --with-pic
-    --with-sysroot=${DEPS_DESTDIR}
+    CONFIGURE_COMMAND ./configure ${build_host} --prefix=${SESSIONDEPS_DESTDIR} --with-pic
+    --with-sysroot=${SESSIONDEPS_DESTDIR}
     --enable-lib-only --disable-shared --enable-static
     --with-gnutls --without-openssl --without-boringssl --without-picotls --without-wolfssl
     --without-libbrotlienc --without-libbrotlidec --without-libev --without-libnghttp3
-    "PKG_CONFIG_LIBDIR=${DEPS_DESTDIR}/lib/pkgconfig" "PKG_CONFIG=pkg-config"
-    "CPPFLAGS=-I${DEPS_DESTDIR}/include" "LDFLAGS=-L${DEPS_DESTDIR}/lib${apple_ldflags_arch}"
-    "CC=${deps_cc}" "CXX=${deps_cxx}" "CFLAGS=${deps_CFLAGS}${apple_cflags_arch}" "CXXFLAGS=${deps_CXXFLAGS}${apple_cxxflags_arch}" ${cross_rc}
+    "PKG_CONFIG_LIBDIR=${SESSIONDEPS_DESTDIR}/lib/pkgconfig" "PKG_CONFIG=pkg-config"
+    "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include" "LDFLAGS=-L${SESSIONDEPS_DESTDIR}/lib${sessiondeps_apple_ldflags_arch}"
+    "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
+    "CFLAGS=${sessiondeps_CFLAGS}${sessiondeps_apple_cflags_arch}" "CXXFLAGS=${sessiondeps_CXXFLAGS}${sessiondeps_apple_cxxflags_arch}"
+    ${cross_rc}
     DEPENDS sessiondep::gnutls
     BUILD_BYPRODUCTS
-    ${DEPS_DESTDIR}/lib/libngtcp2.a
-    ${DEPS_DESTDIR}/lib/libngtcp2_crypto_gnutls.a
-    ${DEPS_DESTDIR}/include/ngtcp2/ngtcp2.h
+    ${SESSIONDEPS_DESTDIR}/lib/libngtcp2.a
+    ${SESSIONDEPS_DESTDIR}/lib/libngtcp2_crypto_gnutls.a
+    ${SESSIONDEPS_DESTDIR}/include/ngtcp2/ngtcp2.h
 )
 
 sessiondep_static_target(sessiondep_ext_libngtcp2 ngtcp2_external libngtcp2.a)

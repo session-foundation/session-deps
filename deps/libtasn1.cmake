@@ -16,11 +16,11 @@ if(CMAKE_C_COMPILER_ID STREQUAL GNU)
 endif()
 
 sessiondep_build_external(libtasn1
-    CONFIGURE_COMMAND ./configure ${build_host} --disable-shared --disable-doc --prefix=${DEPS_DESTDIR} --with-pic
-        "CC=${deps_cc}" "CXX=${deps_cxx}"
-        "CFLAGS=${deps_CFLAGS}${apple_cflags_arch}${libtasn_extra_cflags}"
-        "CXXFLAGS=${deps_CXXFLAGS}${apple_cflags_arch}${libtasn_extra_cflags}"
-        "CPPFLAGS=-I${DEPS_DESTDIR}/include" "LDFLAGS=-L${DEPS_DESTDIR}/lib${apple_ldflags_arch}" ${cross_rc}
-    BUILD_BYPRODUCTS ${DEPS_DESTDIR}/lib/libtasn1.a ${DEPS_DESTDIR}/include/libtasn1.h)
+    CONFIGURE_COMMAND ./configure ${build_host} --disable-shared --disable-doc --prefix=${SESSIONDEPS_DESTDIR} --with-pic
+        "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
+        "CFLAGS=${sessiondeps_CFLAGS}${sessiondeps_apple_cflags_arch}${libtasn_extra_cflags}"
+        "CXXFLAGS=${sessiondeps_CXXFLAGS}${sessiondeps_apple_cflags_arch}${libtasn_extra_cflags}"
+        "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include" "LDFLAGS=-L${SESSIONDEPS_DESTDIR}/lib${sessiondeps_apple_ldflags_arch}" ${cross_rc}
+    BUILD_BYPRODUCTS ${SESSIONDEPS_DESTDIR}/lib/libtasn1.a ${SESSIONDEPS_DESTDIR}/include/libtasn1.h)
 
 sessiondep_static_target(sessiondep_ext_libtasn1 libtasn1_external libtasn1.a)

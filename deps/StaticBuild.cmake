@@ -66,6 +66,7 @@ function(sessiondep_static_target target ext_target libname)
     set_target_properties(${target} PROPERTIES
         IMPORTED_LOCATION ${SESSIONDEPS_DESTDIR}/lib/${libname}
     )
+    target_include_directories(${target} INTERFACE ${SESSIONDEPS_DESTDIR}/include)
     if (ARGN)
         target_link_libraries(${target} INTERFACE ${ARGN})
     endif()

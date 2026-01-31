@@ -239,7 +239,7 @@ function(sessiondep_build_external target)
 
     set(build_def_DEPENDS "")
     set(build_def_PATCH_COMMAND "")
-    set(build_def_CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} --disable-shared --prefix=${SESSIONDEPS_DESTDIR} --with-pic
+    set(build_def_CONFIGURE_COMMAND ./configure ${sessiondeps_sane_cross_host} --disable-shared --prefix=${SESSIONDEPS_DESTDIR} --with-pic
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}" "CFLAGS=${sessiondeps_CFLAGS}" "CXXFLAGS=${sessiondeps_CXXFLAGS}" ${sessiondeps_cross_rc})
     set(build_def_BUILD_COMMAND ${sessiondeps_make})
     set(build_def_INSTALL_COMMAND ${sessiondeps_make} install)

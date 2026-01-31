@@ -1,5 +1,4 @@
 include("${CMAKE_CURRENT_LIST_DIR}/StaticBuild.cmake")
-message(WARNING "DD=${SESSIONDEPS_DESTDIR}")
 
 set(LIBEVENT_VERSION 2.1.12-stable CACHE STRING "libevent version")
 set(LIBEVENT_MIRROR ${LOCAL_MIRROR} https://github.com/libevent/libevent/releases/download/release-${LIBEVENT_VERSION}

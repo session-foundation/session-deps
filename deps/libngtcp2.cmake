@@ -20,7 +20,7 @@ sessiondep_build_external(libngtcp2
     "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include" "LDFLAGS=-L${SESSIONDEPS_DESTDIR}/lib${sessiondeps_apple_ldflags_arch}"
     "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
     "CFLAGS=${sessiondeps_CFLAGS}${sessiondeps_apple_cflags_arch}" "CXXFLAGS=${sessiondeps_CXXFLAGS}${sessiondeps_apple_cxxflags_arch}"
-    ${cross_rc}
+    ${sessiondeps_cross_rc}
     DEPENDS sessiondep::gnutls
     BUILD_BYPRODUCTS
     ${SESSIONDEPS_DESTDIR}/lib/libngtcp2.a

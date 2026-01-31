@@ -20,7 +20,8 @@ sessiondep_build_external(libtasn1
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
         "CFLAGS=${sessiondeps_CFLAGS}${sessiondeps_apple_cflags_arch}${libtasn_extra_cflags}"
         "CXXFLAGS=${sessiondeps_CXXFLAGS}${sessiondeps_apple_cflags_arch}${libtasn_extra_cflags}"
-        "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include" "LDFLAGS=-L${SESSIONDEPS_DESTDIR}/lib${sessiondeps_apple_ldflags_arch}" ${cross_rc}
+        "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include" "LDFLAGS=-L${SESSIONDEPS_DESTDIR}/lib${sessiondeps_apple_ldflags_arch}"
+        ${sessiondeps_cross_rc}
     BUILD_BYPRODUCTS ${SESSIONDEPS_DESTDIR}/lib/libtasn1.a ${SESSIONDEPS_DESTDIR}/include/libtasn1.h)
 
 sessiondep_static_target(sessiondep_ext_libtasn1 libtasn1_external libtasn1.a)

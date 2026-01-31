@@ -17,7 +17,7 @@ sessiondep_build_external(libgmp
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
         "CFLAGS=${sessiondeps_CFLAGS}${sessiondeps_apple_cflags_arch}" "CXXFLAGS=${sessiondeps_CXXFLAGS}${sessiondeps_apple_cxxflags_arch}"
         "LDFLAGS=-L${SESSIONDEPS_DESTDIR}/lib${sessiondeps_apple_ldflags_arch}"
-        ${cross_rc}
+        ${sessiondeps_cross_rc}
         CC_FOR_BUILD=cc
         CPP_FOR_BUILD=cpp
 )

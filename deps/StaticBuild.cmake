@@ -34,7 +34,7 @@ endfunction()
 
 
 # Add a static imported target for a single library.  If the static build produces just one library
-# then this can be the final `libsession_ext_PKG` target.  For a multi-library output you need
+# then this can be the final `sessiondep_ext_PKG` target.  For a multi-library output you need
 # one of these calls per produced output, and then use `sessiondep_bundle()` to produce the
 # final required target from multiple targets.
 #
@@ -207,7 +207,7 @@ if(SESSIONDEPS_LTO)
     set(deps_CFLAGS "${deps_CFLAGS} -flto")
 endif()
 
-if(APPLE)
+if(APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET)
     set(deps_CFLAGS "${deps_CFLAGS} -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
     set(deps_CXXFLAGS "${deps_CXXFLAGS} -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
 endif()

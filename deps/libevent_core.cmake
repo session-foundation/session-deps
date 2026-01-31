@@ -27,7 +27,8 @@ sessiondep_build_external(libevent
     "CC=${sessiondeps_cc}"
     "CXX=${sessiondeps_cxx}"
     "CFLAGS=${sessiondeps_CFLAGS}${sessiondeps_apple_cflags_arch}"
-    "CXXFLAGS=${sessiondeps_CXXFLAGS}${sessiondeps_apple_cxxflags_arch}" ${cross_rc}
+    "CXXFLAGS=${sessiondeps_CXXFLAGS}${sessiondeps_apple_cxxflags_arch}"
+    ${sessiondeps_cross_rc}
     BUILD_BYPRODUCTS
     ${SESSIONDEPS_DESTDIR}/lib/libevent_core.a
     ${lib_pthreads}

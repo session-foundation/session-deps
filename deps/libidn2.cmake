@@ -17,7 +17,7 @@ sessiondep_build_external(libidn2
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
         "CFLAGS=${sessiondeps_CFLAGS}${sessiondeps_apple_cflags_arch}"
         "CXXFLAGS=${sessiondeps_CXXFLAGS}${sessiondeps_apple_cflags_arch}"
-        ${cross_rc}
+        ${sessiondeps_cross_rc}
     DEPENDS sessiondep::libunistring
     BUILD_BYPRODUCTS ${SESSIONDEPS_DESTDIR}/lib/libidn2.a ${SESSIONDEPS_DESTDIR}/include/idn2.h)
 sessiondep_static_target(sessiondep_ext_libidn2 libidn2_external libidn2.a sessiondep::libunistring)

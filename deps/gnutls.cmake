@@ -47,7 +47,7 @@ sessiondep_find_package_override(
     ${SESSIONDEPS_DESTDIR}/lib/libgnutls.a)
 
 if(WIN32)
-    target_link_libraries(libsession_ext_gnutls INTERFACE ws2_32 ncrypt crypt32 iphlpapi)
+    target_link_libraries(sessiondep_ext_gnutls INTERFACE ws2_32 ncrypt crypt32 iphlpapi)
     # See GNUTLS gitlab issue 1117:
-    target_compile_definitions(libsession_ext_gnutls INTERFACE GNUTLS_INTERNAL_BUILD)
+    target_compile_definitions(sessiondep_ext_gnutls INTERFACE GNUTLS_INTERNAL_BUILD)
 endif()

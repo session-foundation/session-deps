@@ -221,3 +221,24 @@ function(check_submodule relative_path)
         check_submodule("${submod}" WORKING_DIRECTORY "${relative_path}")
     endforeach()
 endfunction ()
+
+
+set(SESSIONDEPS_CMAKE_MODS ${CMAKE_BINARY_DIR}/mod-overrides CACHE PATH "Path where sessiondep_find_package_override writes cmake override files")
+
+# Creates a FindXXX.cmake in the module search path, typically loaded with static build items, so
+# that later calls to find_package(XXX) will load from there instead of trying to load a system one.
+#
+# For an example see the usage in deps/gnutls.cmake.
+function(sessiondep_override_find_package NAME VERSION INCLUDE_DIR LIBRARY LIBRARIES)
+    get_property(_sdep_applied_modpath_override GLOBAL PROPERTY _sdep_applied_modpath_override)
+    if(NOT _sdep_applied_modpath_override)
+        file(MAKE_DIRECTORY ${SESSIONDEPS_CMAKE_MODS})
+        list(INSERT CMAKE_MODULE_PATH 0 ${SESSIONDEPS_CMAKE_MODS})
+        set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" CACHE INTERNAL "Global sessiondep override for Find modules" FORCE)
+        set_property(GLOBAL PROPERTY _sdep_applied_modpath_override TRUE)
+    endif()
+
+    configure_file(${CMAKE_CURRENT_FUNCTION_LIST_DIR}/deps/FindXXX.cmake.template
+        ${SESSIONDEPS_CMAKE_MODS}/Find${NAME}.cmake
+        @ONLY)
+endfunction()

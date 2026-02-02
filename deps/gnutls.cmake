@@ -37,7 +37,7 @@ sessiondep_build_external(gnutls
 sessiondep_static_simple(gnutls
     sessiondep::nettle sessiondep::hogweed sessiondep::libidn2 sessiondep::libtasn1)
 
-sessiondep_find_package_override(
+sessiondep_override_find_package(
     GnuTLS
     ${GNUTLS_VERSION}
     ${SESSIONDEPS_DESTDIR}/include

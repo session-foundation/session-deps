@@ -81,10 +81,10 @@ endfunction()
 # doesn't already starts with `lib` we prepend it to the NAME.a argument.
 function(sessiondep_static_simple name)
     set(lib_prefix)
-    if(NOT lib MATCHES "^lib")
+    if(NOT name MATCHES "^lib")
         set(lib_prefix "lib")
     endif()
-    add_library(sessiondep_ext_${name} ${name} ${lib_prefix}${name} ${ARGN})
+    sessiondep_static_target(sessiondep_ext_${name} ${name} ${lib_prefix}${name}.a ${ARGN})
 endfunction()
 
 

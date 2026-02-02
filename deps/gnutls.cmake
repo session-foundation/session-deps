@@ -1,8 +1,6 @@
-include("${CMAKE_CURRENT_LIST_DIR}/StaticBuild.cmake")
-
 set(GNUTLS_VERSION 3.8.10 CACHE STRING "gnutls version")
 string(REGEX REPLACE "^([0-9]+\\.[0-9]+)\\.[0-9]+$" "\\1" gnutls_version_nopatch "${GNUTLS_VERSION}")
-set(GNUTLS_MIRROR ${LOCAL_MIRROR} https://www.gnupg.org/ftp/gcrypt/gnutls/v${gnutls_version_nopatch}
+set(GNUTLS_MIRROR https://www.gnupg.org/ftp/gcrypt/gnutls/v${gnutls_version_nopatch}
     CACHE STRING "gnutls mirror(s)")
 set(GNUTLS_SOURCE gnutls-${GNUTLS_VERSION}.tar.xz)
 set(GNUTLS_HASH SHA512=d453bd4527af95cb3905ce8753ceafd969e3f442ad1d148544a233ebf13285b999930553a805a0511293cc25390bb6a040260df5544a7c55019640f920ad3d92
@@ -36,7 +34,7 @@ sessiondep_build_external(gnutls
     ${SESSIONDEPS_DESTDIR}/lib/libgnutls.a
     ${SESSIONDEPS_DESTDIR}/include/gnutls/gnutls.h
 )
-sessiondep_static_target(sessiondep_ext_gnutls gnutls_external libgnutls.a
+sessiondep_static_simple(gnutls
     sessiondep::nettle sessiondep::hogweed sessiondep::libidn2 sessiondep::libtasn1)
 
 sessiondep_find_package_override(

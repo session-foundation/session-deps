@@ -1,7 +1,5 @@
-include("${CMAKE_CURRENT_LIST_DIR}/StaticBuild.cmake")
-
 set(LIBNGTCP2_VERSION 1.15.0 CACHE STRING "ngtcp2 version")
-set(LIBNGTCP2_MIRROR ${LOCAL_MIRROR} https://github.com/ngtcp2/ngtcp2/releases/download/v${LIBNGTCP2_VERSION}
+set(LIBNGTCP2_MIRROR https://github.com/ngtcp2/ngtcp2/releases/download/v${LIBNGTCP2_VERSION}
     CACHE STRING "ngtcp2 mirror(s)")
 set(LIBNGTCP2_SOURCE ngtcp2-${LIBNGTCP2_VERSION}.tar.xz)
 set(LIBNGTCP2_HASH SHA512=8d621f49561f80242ec1737ac9706adf7525c17e268f84dbb05c21fd9346921d458d8e64eebad50e4c04d4059aecb5c00245f7fde41781a31fe7da9634b1b222

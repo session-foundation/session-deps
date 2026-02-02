@@ -1,8 +1,5 @@
-include("${CMAKE_CURRENT_LIST_DIR}/StaticBuild.cmake")
-
 set(LIBGMP_VERSION 6.3.0 CACHE STRING "gmp version")
-set(LIBGMP_MIRROR ${LOCAL_MIRROR} https://gmplib.org/download/gmp
-    CACHE STRING "gmp mirror(s)")
+set(LIBGMP_MIRROR https://gmplib.org/download/gmp CACHE STRING "gmp mirror(s)")
 set(LIBGMP_SOURCE gmp-${LIBGMP_VERSION}.tar.xz)
 set(LIBGMP_HASH SHA512=e85a0dab5195889948a3462189f0e0598d331d3457612e2d3350799dba2e244316d256f8161df5219538eb003e4b5343f989aaa00f96321559063ed8c8f29fd2
     CACHE STRING "gmp source hash")
@@ -21,4 +18,4 @@ sessiondep_build_external(libgmp
         CC_FOR_BUILD=cc
         CPP_FOR_BUILD=cpp
 )
-sessiondep_static_target(sessiondep_ext_libgmp libgmp libgmp.a)
+sessiondep_static_simple(libgmp)

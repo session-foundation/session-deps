@@ -38,6 +38,8 @@ endfunction()
 # one of these calls per produced output, and then use `sessiondep_bundle()` to produce the
 # final required target from multiple targets.
 #
+# See also the sessiondep_static_simple wrapper for very simple library dependencies.
+#
 # After a sessiondep_build_external(mypkg ...) that produces a single static library lib/libmypkg.a
 # you would typically call this as follows to produce the proper target needed for satisfy a static
 # dep:
@@ -70,6 +72,19 @@ function(sessiondep_static_target target ext_target libname)
     if (ARGN)
         target_link_libraries(${target} INTERFACE ${ARGN})
     endif()
+endfunction()
+
+
+# Shortcut for adding an static imported target for a basic single-library static library.
+# sessiondep_static_simple(NAME ...deps...) is a approximately a shortcut for
+# `sessiondep_static_target(sessiondep_ext_NAME NAME NAME.a ...deps...)`, except that when NAME
+# doesn't already starts with `lib` we prepend it to the NAME.a argument.
+function(sessiondep_static_simple name)
+    set(lib_prefix)
+    if(NOT lib MATCHES "^lib")
+        set(lib_prefix "lib")
+    endif()
+    add_library(sessiondep_ext_${name} ${name} ${lib_prefix}${name} ${ARGN})
 endfunction()
 
 
@@ -295,7 +310,7 @@ function(sessiondep_build_external target)
         message(FATAL_ERROR "Unable to build ${target}: ${prefix}_SOURCE not set")
     endif()
 
-    sessiondep_expand_urls(urls ${${prefix}_SOURCE} ${${prefix}_MIRROR})
+    sessiondep_expand_urls(urls ${${prefix}_SOURCE} ${LOCAL_MIRROR} ${${prefix}_MIRROR})
     ExternalProject_Add("sessiondep_${target}_external"
         DEPENDS ${fixed_depends}
         BUILD_IN_SOURCE ON

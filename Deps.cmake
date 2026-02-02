@@ -5,11 +5,11 @@ include_guard(GLOBAL)
 # Versioning: if you only add things (and aren't breaking the top-level function), increment the
 # second number.  Increment the first number if this is a breaking change: encountering different
 # major versions within the submodules of the same project will be a fatal error.
-set(session_deps_version 1.0)
-
+#
 # If different versions of this script gets loaded from different places we want to defer to the
 # functions set in the most recent version as it may have fixes or new deps in it that an older
-# version is missing.
+# version is missing, and so we let later versions overwrite the functions of earlier versions.
+set(session_deps_version 1.1)
 
 get_property(_sdep_loaded_version GLOBAL PROPERTY _sdep_loaded_version)
 
@@ -118,6 +118,7 @@ function(session_dep libname minver)
         set(link_to)  # In case it was partially filled while checking extra deps, above
         set(dep_ver -1) # -1 is used to indicate a local static build
 
+        include("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/deps/StaticBuild.cmake")
         include("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/deps/${libname}.cmake")
 
         foreach(t IN LISTS libname sdep_WITH)

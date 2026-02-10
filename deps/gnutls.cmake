@@ -19,7 +19,7 @@ endif()
 
 sessiondep_build_external(gnutls
     ${gnutls_patch_commands}
-    CONFIGURE_COMMAND ./configure ${sessiondeps_build_host} --disable-shared --prefix=${SESSIONDEPS_DESTDIR} --with-pic
+    CONFIGURE_COMMAND ./configure ${sessiondeps_sane_cross_host} --disable-shared --prefix=${SESSIONDEPS_DESTDIR} --with-pic
         --without-p11-kit --disable-libdane --disable-cxx --without-tpm --without-tpm2 --disable-doc
         --without-zlib --without-brotli --without-zstd --without-libintl-prefix --disable-tests
         --disable-valgrind-tests --disable-full-test-suite --disable-tools

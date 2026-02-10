@@ -186,7 +186,7 @@ if(APPLE AND CMAKE_CROSSCOMPILING)
       endforeach()
     endif()
 elseif(deps_cross_host STREQUAL "" AND CMAKE_LIBRARY_ARCHITECTURE)
-    set(deps_build_host "--build=${CMAKE_LIBRARY_ARCHITECTURE}")
+    set(deps_sane_cross_host "--build=${CMAKE_LIBRARY_ARCHITECTURE}")
 endif()
 
 set(deps_CFLAGS "-O2")
@@ -217,7 +217,7 @@ endif()
 # Promote any variables set above as `deps_whatever` to a cache variable `sessiondeps_whatever` so
 # that the functions below and build scripts can reference them:
 foreach(var IN ITEMS
-        cc cxx ld ranlib ar CFLAGS CXXFLAGS make cross_host build_host sane_cross_host cross_rc
+        cc cxx ld ranlib ar CFLAGS CXXFLAGS make cross_host sane_cross_host cross_rc
         android_machine apple_cflags_arch apple_cxxflags_arch apple_ldflags_arch)
     if(DEFINED deps_${var})
         set(sessiondeps_${var} "${deps_${var}}" CACHE INTERNAL "" FORCE)

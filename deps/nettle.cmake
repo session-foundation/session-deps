@@ -7,7 +7,7 @@ set(NETTLE_HASH SHA512=bf37ddd7dca8e78488da2a5286dcf16761d527d620572b42f2ad27bb8
 session_dep(libgmp 6)
 
 sessiondep_build_external(nettle
-    CONFIGURE_COMMAND ./configure ${sessiondeps_build_host} --disable-shared --prefix=${SESSIONDEPS_DESTDIR} --libdir=${SESSIONDEPS_DESTDIR}/lib
+    CONFIGURE_COMMAND ./configure ${sessiondeps_sane_cross_host} --disable-shared --prefix=${SESSIONDEPS_DESTDIR} --libdir=${SESSIONDEPS_DESTDIR}/lib
         --enable-pic --disable-openssl --disable-documentation
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
         "CFLAGS=${sessiondeps_CFLAGS}${sessiondeps_apple_cflags_arch}" "CXXFLAGS=${sessiondeps_CXXFLAGS}${sessiondeps_apple_cxxflags_arch}"

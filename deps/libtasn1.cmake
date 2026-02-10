@@ -13,7 +13,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL GNU)
 endif()
 
 sessiondep_build_external(libtasn1
-    CONFIGURE_COMMAND ./configure ${sessiondeps_build_host} --disable-shared --disable-doc --prefix=${SESSIONDEPS_DESTDIR} --with-pic
+    CONFIGURE_COMMAND ./configure ${sessiondeps_sane_cross_host} --disable-shared --disable-doc --prefix=${SESSIONDEPS_DESTDIR} --with-pic
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
         "CFLAGS=${sessiondeps_CFLAGS}${sessiondeps_apple_cflags_arch}${libtasn_extra_cflags}"
         "CXXFLAGS=${sessiondeps_CXXFLAGS}${sessiondeps_apple_cflags_arch}${libtasn_extra_cflags}"

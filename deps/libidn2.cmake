@@ -10,7 +10,7 @@ session_dep(libunistring 0.9)
 sessiondep_build_external(libidn2
     # Patch out building the tools because they make a compilation with -flto take a very long time:
     PATCH_COMMAND patch -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/libidn2-no-tools.patch
-    CONFIGURE_COMMAND ./configure ${sessiondeps_build_host} --disable-shared --disable-doc --prefix=${SESSIONDEPS_DESTDIR} --with-pic
+    CONFIGURE_COMMAND ./configure ${sessiondeps_sane_cross_host} --disable-shared --disable-doc --prefix=${SESSIONDEPS_DESTDIR} --with-pic
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
         "CFLAGS=${sessiondeps_CFLAGS}${sessiondeps_apple_cflags_arch}"
         "CXXFLAGS=${sessiondeps_CXXFLAGS}${sessiondeps_apple_cflags_arch}"

@@ -93,6 +93,27 @@ function(session_dep libname minver)
             message(VERBOSE "Using previously found ${libname} system lib (${existing_version})")
             return()
         endif()
+    elseif(TARGET _session_dep_${libname})
+        get_target_property(existing_version _session_dep_${libname} sessiondep_ver)
+        if(existing_version EQUAL -1)
+            # If we get here then the base target exists and is doing a static build but we are
+            # missing some WITH targets.  This can happen if, for instance, projectA loads libfoo by
+            # itself, and then includes projectB that wants "libfoo WITH libfoo-extra".  We handle
+            # this by just setting up the WITH targets, since they should already be built but just
+            # not set up yet.
+            foreach(t IN LISTS sdep_WITH)
+                set(tgt _session_dep_${t})
+                if(NOT TARGET ${tgt})
+                    if(NOT TARGET sessiondep_ext_${t})
+                        message(FATAL_ERROR "Internal error: deps/${libname}.cmake static build script did not produce the requested 'WITH ${t}' extra target")
+                    endif()
+                    add_library(${tgt} INTERFACE)
+                    add_library(sessiondep::${t} ALIAS ${tgt})
+                    target_link_libraries(${tgt} INTERFACE sessiondep_ext_${t})
+                endif()
+            endforeach()
+            return()
+        endif()
     endif()
 
     if(NOT build_static)
@@ -123,7 +144,7 @@ function(session_dep libname minver)
 
         foreach(t IN LISTS libname sdep_WITH)
             if(NOT TARGET sessiondep_ext_${t})
-                message(FATAL_ERROR "Internal error: deps/${libname}.cmake static build script did not produce the requested ${t} depency target")
+                message(FATAL_ERROR "Internal error: deps/${libname}.cmake static build script did not produce the requested 'WITH ${t}' extra target")
             endif()
             list(APPEND link_to sessiondep_ext_${t})
         endforeach()

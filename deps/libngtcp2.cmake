@@ -9,7 +9,7 @@ set(LIBNGTCP2_HASH SHA512=8d621f49561f80242ec1737ac9706adf7525c17e268f84dbb05c21
 session_dep(gnutls 3.7.2)
 
 sessiondep_build_external(libngtcp2
-    CONFIGURE_COMMAND ./configure ${sessiondeps_sane_cross_host} --prefix=${SESSIONDEPS_DESTDIR} --with-pic
+    CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} --prefix=${SESSIONDEPS_DESTDIR} --with-pic
     --with-sysroot=${SESSIONDEPS_DESTDIR}
     --enable-lib-only --disable-shared --enable-static
     --with-gnutls --without-openssl --without-boringssl --without-picotls --without-wolfssl

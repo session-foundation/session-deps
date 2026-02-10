@@ -151,13 +151,13 @@ endif()
 set(deps_apple_cflags_arch)
 set(deps_apple_cxxflags_arch)
 set(deps_apple_ldflags_arch)
-set(deps_sane_cross_host "${deps_cross_host}")
+set(deps_raw_cross_host "${deps_cross_host}")
 if(APPLE AND CMAKE_CROSSCOMPILING)
-    if(deps_sane_cross_host MATCHES "^(.*-)ios([0-9.]+)(-.*)?$")
-        set(deps_sane_cross_host "${CMAKE_MATCH_1}darwin${CMAKE_MATCH_2}${CMAKE_MATCH_3}")
+    if(deps_cross_host MATCHES "^(.*-)ios([0-9.]+)(-.*)?$")
+        set(deps_cross_host "${CMAKE_MATCH_1}darwin${CMAKE_MATCH_2}${CMAKE_MATCH_3}")
     endif()
-    if(deps_sane_cross_host MATCHES "^(.*)-simulator$")
-        set(deps_sane_cross_host "${CMAKE_MATCH_1}")
+    if(deps_cross_host MATCHES "^(.*)-simulator$")
+        set(deps_cross_host "${CMAKE_MATCH_1}")
     endif()
 
     set(apple_arch)
@@ -186,7 +186,7 @@ if(APPLE AND CMAKE_CROSSCOMPILING)
       endforeach()
     endif()
 elseif(deps_cross_host STREQUAL "" AND CMAKE_LIBRARY_ARCHITECTURE)
-    set(deps_sane_cross_host "--build=${CMAKE_LIBRARY_ARCHITECTURE}")
+    set(deps_cross_host "--build=${CMAKE_LIBRARY_ARCHITECTURE}")
 endif()
 
 set(deps_CFLAGS "-O2")
@@ -217,7 +217,7 @@ endif()
 # Promote any variables set above as `deps_whatever` to a cache variable `sessiondeps_whatever` so
 # that the functions below and build scripts can reference them:
 foreach(var IN ITEMS
-        cc cxx ld ranlib ar CFLAGS CXXFLAGS make cross_host sane_cross_host cross_rc
+        cc cxx ld ranlib ar CFLAGS CXXFLAGS make cross_host raw_cross_host cross_rc
         android_machine apple_cflags_arch apple_cxxflags_arch apple_ldflags_arch)
     if(DEFINED deps_${var})
         set(sessiondeps_${var} "${deps_${var}}" CACHE INTERNAL "" FORCE)
@@ -234,7 +234,7 @@ function(sessiondep_build_external target)
 
     set(build_def_DEPENDS "")
     set(build_def_PATCH_COMMAND "")
-    set(build_def_CONFIGURE_COMMAND ./configure ${sessiondeps_sane_cross_host} --disable-shared --prefix=${SESSIONDEPS_DESTDIR} --with-pic
+    set(build_def_CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} --disable-shared --prefix=${SESSIONDEPS_DESTDIR} --with-pic
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}" "CFLAGS=${sessiondeps_CFLAGS}" "CXXFLAGS=${sessiondeps_CXXFLAGS}" ${sessiondeps_cross_rc})
     set(build_def_BUILD_COMMAND ${sessiondeps_make})
     set(build_def_INSTALL_COMMAND ${sessiondeps_make} install)

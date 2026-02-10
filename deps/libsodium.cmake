@@ -9,7 +9,9 @@ set(LIBSODIUM_HASH SHA512=ee8cc2f3f5707b172bf75d8c04afbd5f0c83c6f94dbab3f988f07a
 
 sessiondep_build_external(libsodium
     PATCH_COMMAND patch -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/libsodium-1.0.21-fix-arm64-compilation.patch
-    CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} ${sessiondeps_cross_rc} --prefix=${sessiondeps_DEPS_DESTDIR} --disable-shared
-      --enable-static --with-pic "CC=${sessiondeps_cc}" "CFLAGS=${sessiondeps_CFLAGS}")
+    CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} ${sessiondeps_cross_rc}
+      --prefix=${SESSIONDEPS_DESTDIR} --disable-shared --enable-static
+      --with-pic "CC=${sessiondeps_cc}" "CFLAGS=${sessiondeps_CFLAGS}"
+)
 
 sessiondep_static_simple(libsodium)

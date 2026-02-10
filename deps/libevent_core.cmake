@@ -7,7 +7,7 @@ set(LIBEVENT_HASH SHA512=88d8944cd75cbe78bc4e56a6741ca67c017a3686d5349100f1c74f8
 
 
 # libevent doesn't like --host=arm64-whatever, but is okay with aarch64-whatever
-set(libevent_build_host "${sessiondeps_sane_cross_host}")
+set(libevent_build_host "${sessiondeps_cross_host}")
 if(libevent_build_host MATCHES "(.*--host=)arm64-(.*)")
     set(libevent_build_host "${CMAKE_MATCH_1}aarch64-${CMAKE_MATCH_2}")
 endif()
@@ -16,7 +16,7 @@ set(lib_pthreads ${SESSIONDEPS_DESTDIR}/lib/libevent_pthreads.a)
 if(WIN32)
     set(lib_pthreads)
 endif()
-message(WARNING "DD=${SESSIONDEPS_DESTDIR}")
+
 sessiondep_build_external(libevent
     CONFIGURE_COMMAND ./configure ${libevent_build_host} --prefix=${SESSIONDEPS_DESTDIR}
     --enable-static --disable-shared

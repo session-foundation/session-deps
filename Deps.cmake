@@ -173,6 +173,18 @@ endfunction()
 
 
 option(DEPS_FORCE_SUBMODULE "For building all submodule dependencies instead of looking for system libraries" OFF)
+
+# This function checks for a system dependency and if found, links to it.  If not found, the given
+# submodule is added.
+#
+# Arguments:
+# - libname - the pkg-config name
+# - minver - the minimum system lib version required
+# - subdir - the subdirectory to add if the system lib is not used
+# - target - the target name that the subdirectory creates.  If a system lib is used then this
+#            target is created and linked to the system library.  For example if
+#            add_subdirectory(foo) creates target `foo::foo` then pass foo::foo here and you will
+#            get that whether subdirectory or system library is used.
 function(sessiondep_or_submodule libname minver subdir target)
     option(DEPS_FORCE_${libname}_SUBMODULE "force using ${libname} submodule" OFF)
 

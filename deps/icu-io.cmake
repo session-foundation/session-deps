@@ -30,10 +30,10 @@ sessiondep_build_external(icu-io
         ${CMAKE_COMMAND} -E env ${libicu_feature_excludes}
         ${sessiondeps_make}
     BUILD_BYPRODUCTS
-        ${DEPS_DESTDIR}/lib/libicudata.a
-        ${DEPS_DESTDIR}/lib/libicui18n.a
-        ${DEPS_DESTDIR}/lib/libicuuc.a
-        ${DEPS_DESTDIR}/include/unicode/utypes.h
+        ${SESSIONDEPS_DESTDIR}/lib/libicudata.a
+        ${SESSIONDEPS_DESTDIR}/lib/libicui18n.a
+        ${SESSIONDEPS_DESTDIR}/lib/libicuuc.a
+        ${SESSIONDEPS_DESTDIR}/include/unicode/utypes.h
 )
 
 if(LIBICU_SQLITE_ONLY)

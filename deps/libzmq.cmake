@@ -1,5 +1,5 @@
 set(LIBZMQ_VERSION 4.3.5 CACHE STRING "libzmq version")
-set(LIBZMQ_MIRROR ${LOCAL_MIRROR} https://github.com/zeromq/libzmq/releases/download/v${LIBZMQ_VERSION}
+set(LIBZMQ_MIRROR https://github.com/zeromq/libzmq/releases/download/v${LIBZMQ_VERSION}
     CACHE STRING "libzmq mirror(s)")
 set(LIBZMQ_SOURCE zeromq-${LIBZMQ_VERSION}.tar.gz)
 set(LIBZMQ_HASH SHA512=a71d48aa977ad8941c1609947d8db2679fc7a951e4cd0c3a1127ae026d883c11bd4203cf315de87f95f5031aec459a731aec34e5ce5b667b8d0559b157952541

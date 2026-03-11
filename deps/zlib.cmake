@@ -10,7 +10,7 @@ sessiondep_build_external(zlib
     ${CMAKE_COMMAND} -E env "CC=${sessiondeps_cc}" "CFLAGS=${sessiondeps_CFLAGS} -fPIC" ${sessiondeps_cross_extra}
     ./configure --prefix=${SESSIONDEPS_DESTDIR} --static
     BUILD_BYPRODUCTS
-    ${DEPS_DESTDIR}/lib/libz.a
-    ${DEPS_DESTDIR}/include/zlib.h
+    ${SESSIONDEPS_DESTDIR}/lib/libz.a
+    ${SESSIONDEPS_DESTDIR}/include/zlib.h
 )
 add_static_target(sessiondep_ext_zlib zlib libz.a)

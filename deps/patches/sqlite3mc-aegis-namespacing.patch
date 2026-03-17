@@ -1,0 +1,79 @@
+--- sqlite3.c.orig	2026-03-17 16:48:47.329933048 -0300
++++ sqlite3.c	2026-03-17 16:50:34.762781420 -0300
+@@ -286644,6 +286644,76 @@
+ #define AEGIS_PRIVATE static
+ #endif
+ 
++// Namespace aegis structs to avoid linking conflicts with libsodium 1.0.21+:
++/* --- Base Implementation Structs --- */
++#define aegis128_implementation            mc_aegis128_implementation
++#define aegis128l_implementation           mc_aegis128l_implementation
++#define aegis256_implementation            mc_aegis256_implementation
++
++/* --- Standard Variants (Soft, AES-NI, VAES, ARM) --- */
++#define aegis128_soft_implementation       mc_aegis128_soft_implementation
++#define aegis128_aesni_implementation      mc_aegis128_aesni_implementation
++#define aegis128_vaes_implementation       mc_aegis128_vaes_implementation
++#define aegis128_armcrypto_implementation  mc_aegis128_armcrypto_implementation
++
++#define aegis128l_soft_implementation      mc_aegis128l_soft_implementation
++#define aegis128l_aesni_implementation     mc_aegis128l_aesni_implementation
++#define aegis128l_vaes_implementation      mc_aegis128l_vaes_implementation
++#define aegis128l_armcrypto_implementation mc_aegis128l_armcrypto_implementation
++
++#define aegis256_soft_implementation       mc_aegis256_soft_implementation
++#define aegis256_aesni_implementation      mc_aegis256_aesni_implementation
++#define aegis256_vaes_implementation       mc_aegis256_vaes_implementation
++#define aegis256_armcrypto_implementation  mc_aegis256_armcrypto_implementation
++
++/* --- Parallel Variants (x2, x4) --- */
++#define aegis128x2_implementation          mc_aegis128x2_implementation
++#define aegis128x4_implementation          mc_aegis128x4_implementation
++#define aegis128lx2_implementation         mc_aegis128lx2_implementation
++#define aegis128lx4_implementation         mc_aegis128lx4_implementation
++#define aegis256x2_implementation          mc_aegis256x2_implementation
++#define aegis256x4_implementation          mc_aegis256x4_implementation
++
++/* --- Parallel ISA Providers (AES-NI, VAES, AVX2, AVX512) --- */
++#define aegis128x2_aesni_implementation    mc_aegis128x2_aesni_implementation
++#define aegis128x2_vaes_implementation     mc_aegis128x2_vaes_implementation
++#define aegis128x2_avx2_implementation     mc_aegis128x2_avx2_implementation
++#define aegis128x2_avx512_implementation   mc_aegis128x2_avx512_implementation
++
++#define aegis128x4_aesni_implementation    mc_aegis128x4_aesni_implementation
++#define aegis128x4_vaes_implementation     mc_aegis128x4_vaes_implementation
++#define aegis128x4_avx2_implementation     mc_aegis128x4_avx2_implementation
++#define aegis128x4_avx512_implementation   mc_aegis128x4_avx512_implementation
++
++#define aegis128lx2_aesni_implementation   mc_aegis128lx2_aesni_implementation
++#define aegis128lx2_vaes_implementation    mc_aegis128lx2_vaes_implementation
++#define aegis128lx2_avx2_implementation    mc_aegis128lx2_avx2_implementation
++#define aegis128lx2_avx512_implementation  mc_aegis128lx2_avx512_implementation
++
++#define aegis128lx4_aesni_implementation   mc_aegis128lx4_aesni_implementation
++#define aegis128lx4_vaes_implementation    mc_aegis128lx4_vaes_implementation
++#define aegis128lx4_avx2_implementation    mc_aegis128lx4_avx2_implementation
++#define aegis128lx4_avx512_implementation  mc_aegis128lx4_avx512_implementation
++
++#define aegis256x2_aesni_implementation    mc_aegis256x2_aesni_implementation
++#define aegis256x2_vaes_implementation     mc_aegis256x2_vaes_implementation
++#define aegis256x2_avx2_implementation     mc_aegis256x2_avx2_implementation
++#define aegis256x2_avx512_implementation   mc_aegis256x2_avx512_implementation
++
++#define aegis256x4_aesni_implementation    mc_aegis256x4_aesni_implementation
++#define aegis256x4_vaes_implementation     mc_aegis256x4_vaes_implementation
++#define aegis256x4_avx2_implementation     mc_aegis256x4_avx2_implementation
++#define aegis256x4_avx512_implementation   mc_aegis256x4_avx512_implementation
++
++/* --- Internal Tables (can conflict under -flto) --- */
++#define _aes_lut                           mc_aegis_aes_lut
++#define _aes_sbox                          mc_aegis_aes_sbox
++#define _aes_isbox                         mc_aegis_aes_isbox
++#define _aes_td                            mc_aegis_aes_td
++#define _aes_te                            mc_aegis_aes_te
++
++
++
+ /* #include "aegis128l.h" */
+ /*** Begin of #include "aegis128l.h" ***/
+ /*

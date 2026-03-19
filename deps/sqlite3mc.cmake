@@ -1,10 +1,10 @@
-set(SQLITE3MC_VERSION 2.3.1 CACHE STRING "SQLite3 Multiple Ciphers version")
+set(SQLITE3MC_VERSION 2.3.2 CACHE STRING "SQLite3 Multiple Ciphers version")
 set(SQLITE3MC_SQLITE_VERSION 3.51.3 CACHE STRING "SQLite3 Multiple Ciphers underlying sqlite3 version")
 set(SQLITE3MC_MIRROR
     https://github.com/utelle/SQLite3MultipleCiphers/releases/download/v${SQLITE3MC_VERSION}
     CACHE STRING "sqlite3mc download mirror(s)")
 set(SQLITE3MC_SOURCE sqlite3mc-${SQLITE3MC_VERSION}-sqlite-${SQLITE3MC_SQLITE_VERSION}-autoconf.tar.gz)
-set(SQLITE3MC_HASH SHA512=6e1ef206711df4da9062ba9542ab2990b5ab55f68f90c5e769eae474f1e520d92b389ba1b7b20438662d88887beae8abfd2565b9760b1f9922312d1b841af1aa
+set(SQLITE3MC_HASH SHA512=cf58605cd00632cc47b7114868c735997715c91f0f306707e8405ab848056fbcf78c273d7ac2fa6995cad3cff8176a07ec5ba5b58b121b653e985cd2a57a908c
     CACHE STRING "sqlite3mc source hash")
 
 
@@ -20,7 +20,6 @@ endif()
 
 
 sessiondep_build_external(sqlite3mc
-    PATCH_COMMAND patch -p0 -i ${CMAKE_CURRENT_LIST_DIR}/patches/sqlite3mc-aegis-namespacing.patch
     CONFIGURE_COMMAND
     ${CMAKE_COMMAND} -E env
         "PKG_CONFIG_LIBDIR=${SESSIONDEPS_DESTDIR}/lib/pkgconfig"

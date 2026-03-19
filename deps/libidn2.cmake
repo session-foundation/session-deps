@@ -1,8 +1,7 @@
-set(LIBIDN2_VERSION 2.3.8 CACHE STRING "libidn2 version")
-set(LIBIDN2_MIRROR https://ftp.gnu.org/gnu/libidn CACHE STRING "libidn2 mirror(s)")
+set(LIBIDN2_VERSION 2.3.8)
+set(LIBIDN2_MIRROR https://ftp.gnu.org/gnu/libidn)
 set(LIBIDN2_SOURCE libidn2-${LIBIDN2_VERSION}.tar.gz)
-set(LIBIDN2_HASH SHA512=4d8427c0f115268132f7544e80a808c883ab1406338f6c529b1a586b016d57aedb0857f66166eb8d9f37d70efc9dccf907b673b43b17bcf258c8797db1e829ce
-    CACHE STRING "libidn2 source hash")
+set(LIBIDN2_HASH SHA512=4d8427c0f115268132f7544e80a808c883ab1406338f6c529b1a586b016d57aedb0857f66166eb8d9f37d70efc9dccf907b673b43b17bcf258c8797db1e829ce)
 
 session_dep(libunistring 0.9)
 

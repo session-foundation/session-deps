@@ -1,9 +1,7 @@
-set(LIBEVENT_VERSION 2.1.12-stable CACHE STRING "libevent version")
-set(LIBEVENT_MIRROR https://github.com/libevent/libevent/releases/download/release-${LIBEVENT_VERSION}
-    CACHE STRING "libevent mirror(s)")
+set(LIBEVENT_VERSION 2.1.12-stable)
+set(LIBEVENT_MIRROR https://github.com/libevent/libevent/releases/download/release-${LIBEVENT_VERSION})
 set(LIBEVENT_SOURCE libevent-${LIBEVENT_VERSION}.tar.gz)
-set(LIBEVENT_HASH SHA512=88d8944cd75cbe78bc4e56a6741ca67c017a3686d5349100f1c74f8a68ac0b6410ce64dff160be4a4ba0696ee29540dfed59aaf3c9a02f0c164b00307fcfe84f
-    CACHE STRING "libevent source hash")
+set(LIBEVENT_HASH SHA512=88d8944cd75cbe78bc4e56a6741ca67c017a3686d5349100f1c74f8a68ac0b6410ce64dff160be4a4ba0696ee29540dfed59aaf3c9a02f0c164b00307fcfe84f)
 
 
 # libevent doesn't like --host=arm64-whatever, but is okay with aarch64-whatever

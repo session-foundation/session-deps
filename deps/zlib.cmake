@@ -1,8 +1,7 @@
-set(ZLIB_VERSION 1.3.1 CACHE STRING "zlib version")
-set(ZLIB_MIRROR https://zlib.net CACHE STRING "zlib mirror(s)")
+set(ZLIB_VERSION 1.3.1)
+set(ZLIB_MIRROR https://zlib.net)
 set(ZLIB_SOURCE zlib-${ZLIB_VERSION}.tar.xz)
-set(ZLIB_HASH SHA256=38ef96b8dfe510d42707d9c781877914792541133e1870841463bfa73f883e32
-  CACHE STRING "zlib source hash")
+set(ZLIB_HASH SHA256=38ef96b8dfe510d42707d9c781877914792541133e1870841463bfa73f883e32)
 
 
 sessiondep_build_external(zlib

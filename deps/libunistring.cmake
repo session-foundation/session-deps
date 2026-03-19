@@ -1,8 +1,7 @@
-set(LIBUNISTRING_VERSION 1.3 CACHE STRING "libunistring version")
-set(LIBUNISTRING_MIRROR https://ftp.gnu.org/gnu/libunistring CACHE STRING "libunistring mirror(s)")
+set(LIBUNISTRING_VERSION 1.3)
+set(LIBUNISTRING_MIRROR https://ftp.gnu.org/gnu/libunistring)
 set(LIBUNISTRING_SOURCE libunistring-${LIBUNISTRING_VERSION}.tar.xz)
-set(LIBUNISTRING_HASH SHA512=864d42b1d4ae4941fe5c8327d6726ab8e3a35d2d5f9d25ce4859a72ab2f549a7b68f58638cf8767d863f58161d1a4053495d185860964a942d6750e42facf931
-    CACHE STRING "libunistring source hash")
+set(LIBUNISTRING_HASH SHA512=864d42b1d4ae4941fe5c8327d6726ab8e3a35d2d5f9d25ce4859a72ab2f549a7b68f58638cf8767d863f58161d1a4053495d185860964a942d6750e42facf931)
 
 
 sessiondep_build_external(libunistring

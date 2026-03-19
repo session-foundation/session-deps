@@ -1,10 +1,8 @@
-set(ICU-IO_VERSION 78.2 CACHE STRING "ICU version")
+set(ICU-IO_VERSION 78.2)
 set(ICU-IO_MIRROR
-    https://github.com/unicode-org/icu/releases/download/release-${ICU-IO_VERSION}
-    CACHE STRING "icu download mirror(s)")
+    https://github.com/unicode-org/icu/releases/download/release-${ICU-IO_VERSION})
 set(ICU-IO_SOURCE icu4c-${ICU-IO_VERSION}-sources.tgz)
-set(ICU-IO_HASH SHA512=92feddfe81c57336f386c7cbc9f6d976bf349db148a77a247c4559676f51116115c8c52c4d907feb50933f72ab75fd8e48be092bf9c8ca33a3e8fabc9372a5d6
-    CACHE STRING "icu source hash")
+set(ICU-IO_HASH SHA512=92feddfe81c57336f386c7cbc9f6d976bf349db148a77a247c4559676f51116115c8c52c4d907feb50933f72ab75fd8e48be092bf9c8ca33a3e8fabc9372a5d6)
 set(ICU-IO_DATA icu4c-${ICU-IO_VERSION}-data.zip)
 set(ICU-IO_DATA_SHA512 a78bdf24272d6803d190fcf3504aa6f19ca85b7ce9f273828b192b3824ec48a8d03e6793c4f98de4d89b697b75a4c8e6b6320cfca1438c4cf3d0dd5dbda64edc)
 

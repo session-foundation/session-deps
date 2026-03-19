@@ -1,8 +1,7 @@
-set(LIBUNBOUND_VERSION 1.24.2 CACHE STRING "unbound version")
-set(LIBUNBOUND_MIRROR https://nlnetlabs.nl/downloads/unbound CACHE STRING "unbound download mirror(s)")
+set(LIBUNBOUND_VERSION 1.24.2)
+set(LIBUNBOUND_MIRROR https://nlnetlabs.nl/downloads/unbound)
 set(LIBUNBOUND_SOURCE unbound-${LIBUNBOUND_VERSION}.tar.gz)
-set(LIBUNBOUND_HASH SHA256=44e7b53e008a6dcaec03032769a212b46ab5c23c105284aa05a4f3af78e59cdb
-    CACHE STRING "unbound source hash")
+set(LIBUNBOUND_HASH SHA256=44e7b53e008a6dcaec03032769a212b46ab5c23c105284aa05a4f3af78e59cdb)
 
 
 if(WIN32)

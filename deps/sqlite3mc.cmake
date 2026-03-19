@@ -1,11 +1,9 @@
-set(SQLITE3MC_VERSION 2.3.2 CACHE STRING "SQLite3 Multiple Ciphers version")
-set(SQLITE3MC_SQLITE_VERSION 3.51.3 CACHE STRING "SQLite3 Multiple Ciphers underlying sqlite3 version")
+set(SQLITE3MC_VERSION 2.3.2)
+set(SQLITE3MC_SQLITE_VERSION 3.51.3)
 set(SQLITE3MC_MIRROR
-    https://github.com/utelle/SQLite3MultipleCiphers/releases/download/v${SQLITE3MC_VERSION}
-    CACHE STRING "sqlite3mc download mirror(s)")
+    https://github.com/utelle/SQLite3MultipleCiphers/releases/download/v${SQLITE3MC_VERSION})
 set(SQLITE3MC_SOURCE sqlite3mc-${SQLITE3MC_VERSION}-sqlite-${SQLITE3MC_SQLITE_VERSION}-autoconf.tar.gz)
-set(SQLITE3MC_HASH SHA512=cf58605cd00632cc47b7114868c735997715c91f0f306707e8405ab848056fbcf78c273d7ac2fa6995cad3cff8176a07ec5ba5b58b121b653e985cd2a57a908c
-    CACHE STRING "sqlite3mc source hash")
+set(SQLITE3MC_HASH SHA512=cf58605cd00632cc47b7114868c735997715c91f0f306707e8405ab848056fbcf78c273d7ac2fa6995cad3cff8176a07ec5ba5b58b121b653e985cd2a57a908c)
 
 
 option(SQLITE3MC_WITH_LIBICU "Build with libicu support" OFF)

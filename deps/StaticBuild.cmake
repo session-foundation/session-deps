@@ -4,7 +4,9 @@ include_guard(GLOBAL)
 
 set(LOCAL_MIRROR "" CACHE STRING "local mirror path/URL for lib downloads")
 
-include(ExternalProject)
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.20)
+    include(ExternalProject)
+endif()
 
 set(SESSIONDEPS_DESTDIR ${CMAKE_BINARY_DIR}/static-deps CACHE INTERNAL "" FORCE)
 set(SESSIONDEPS_SOURCEDIR ${CMAKE_BINARY_DIR}/static-deps-sources CACHE INTERNAL "" FORCE)
@@ -294,6 +296,13 @@ function(sessiondep_build_external target)
 
     if(NOT ${prefix}_SOURCE)
         message(FATAL_ERROR "Unable to build ${target}: ${prefix}_SOURCE not set")
+    endif()
+
+    if(CMAKE_VERSION VERSION_LESS 3.20)
+        # cmake <3.20 has scoping issues with ExternalProject_Add that makes it throw a fatal error
+        # if the include was outside this function, so we have to include it here every time to
+        # workaround cmake's buggy older design.
+        include(ExternalProject)
     endif()
 
     sessiondep_expand_urls(urls ${${prefix}_SOURCE} ${LOCAL_MIRROR} ${${prefix}_MIRROR})

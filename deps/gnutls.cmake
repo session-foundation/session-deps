@@ -24,8 +24,8 @@ sessiondep_build_external(gnutls
         "PKG_CONFIG_LIBDIR=${SESSIONDEPS_DESTDIR}/lib/pkgconfig" "PKG_CONFIG=pkg-config"
         "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include" "LDFLAGS=-L${SESSIONDEPS_DESTDIR}/lib${sessiondeps_apple_ldflags_arch}"
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
-        "CFLAGS=${sessiondeps_CFLAGS}${sessiondeps_apple_cflags_arch}"
-        "CXXFLAGS=${sessiondeps_CXXFLAGS}${sessiondeps_apple_cxxflags_arch}"
+        "CFLAGS=${sessiondeps_CFLAGS}"
+        "CXXFLAGS=${sessiondeps_CXXFLAGS}"
         ${sessiondeps_cross_rc}
     DEPENDS sessiondep::nettle sessiondep::hogweed sessiondep::libidn2 sessiondep::libtasn1
     BUILD_BYPRODUCTS

@@ -156,6 +156,7 @@ endif()
 set(deps_apple_cflags_arch)
 set(deps_apple_cxxflags_arch)
 set(deps_apple_ldflags_arch)
+set(deps_cmake_osx_args)
 set(deps_raw_cross_host "${deps_cross_host}")
 if(APPLE AND CMAKE_CROSSCOMPILING)
     if(deps_cross_host MATCHES "^(.*-)ios([0-9.]+)(-.*)?$")
@@ -190,6 +191,16 @@ if(APPLE AND CMAKE_CROSSCOMPILING)
         set(deps_apple_${f}flags_arch "${deps_apple_${f}flags_arch} -isysroot ${CMAKE_OSX_SYSROOT}")
       endforeach()
     endif()
+
+    # CMake-based deps (built via DEFAULT_CMAKE) don't use CFLAGS/CXXFLAGS, so pass the target arch
+    # (and sysroot/deployment target) to their sub-cmake instead.
+    set(deps_cmake_osx_args "-DCMAKE_OSX_ARCHITECTURES=${apple_arch}")
+    if(CMAKE_OSX_SYSROOT)
+        list(APPEND deps_cmake_osx_args "-DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}")
+    endif()
+    if(CMAKE_OSX_DEPLOYMENT_TARGET)
+        list(APPEND deps_cmake_osx_args "-DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}")
+    endif()
 elseif(deps_cross_host STREQUAL "" AND CMAKE_LIBRARY_ARCHITECTURE)
     set(deps_cross_host "--build=${CMAKE_LIBRARY_ARCHITECTURE}")
 endif()
@@ -211,6 +222,13 @@ if(APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET)
     set(deps_CXXFLAGS "${deps_CXXFLAGS} -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
 endif()
 
+# Fold the Apple -arch/-isysroot flags into the base compile flags so that *every* dependency picks
+# them up, rather than requiring each dep script to remember to append them (which is error-prone --
+# several deps did not, and built for the host arch during a cross build).  These are empty except on
+# an Apple cross build.  LDFLAGS remain separate (sessiondeps_apple_ldflags_arch), applied per-dep.
+set(deps_CFLAGS "${deps_CFLAGS}${deps_apple_cflags_arch}")
+set(deps_CXXFLAGS "${deps_CXXFLAGS}${deps_apple_cxxflags_arch}")
+
 
 
 if("${CMAKE_GENERATOR}" STREQUAL "Unix Makefiles")
@@ -223,7 +241,7 @@ endif()
 # that the functions below and build scripts can reference them:
 foreach(var IN ITEMS
         cc cxx ld ranlib ar CFLAGS CXXFLAGS make cross_host raw_cross_host cross_rc
-        android_machine apple_cflags_arch apple_cxxflags_arch apple_ldflags_arch)
+        android_machine apple_cflags_arch apple_cxxflags_arch apple_ldflags_arch cmake_osx_args)
     if(DEFINED deps_${var})
         set(sessiondeps_${var} "${deps_${var}}" CACHE INTERNAL "" FORCE)
     endif()
@@ -260,7 +278,11 @@ function(sessiondep_build_external target)
     string(REPLACE ___TARGET___ ${target} arg_BUILD_BYPRODUCTS "${arg_BUILD_BYPRODUCTS}")
 
     if(arg_CONFIGURE_COMMAND MATCHES "^DEFAULT_CMAKE")
-        string(REGEX REPLACE "^DEFAULT_CMAKE(;?)" "CMAKE_ARGS;-DCMAKE_INSTALL_PREFIX=${SESSIONDEPS_DESTDIR}\\1" configure "${arg_CONFIGURE_COMMAND}")
+        set(_default_cmake_args "-DCMAKE_INSTALL_PREFIX=${SESSIONDEPS_DESTDIR}")
+        if(sessiondeps_cmake_osx_args)
+            list(APPEND _default_cmake_args ${sessiondeps_cmake_osx_args})
+        endif()
+        string(REGEX REPLACE "^DEFAULT_CMAKE(;?)" "CMAKE_ARGS;${_default_cmake_args}\\1" configure "${arg_CONFIGURE_COMMAND}")
         set(build "")
         set(install "")
     else()

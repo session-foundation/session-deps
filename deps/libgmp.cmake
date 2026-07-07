@@ -11,7 +11,7 @@ sessiondep_build_external(libgmp
         patch -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/gmplib-trust-vsprintf-return.patch
     CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} --disable-shared --prefix=${SESSIONDEPS_DESTDIR} --with-pic
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
-        "CFLAGS=${sessiondeps_CFLAGS}${sessiondeps_apple_cflags_arch}" "CXXFLAGS=${sessiondeps_CXXFLAGS}${sessiondeps_apple_cxxflags_arch}"
+        "CFLAGS=${sessiondeps_CFLAGS}" "CXXFLAGS=${sessiondeps_CXXFLAGS}"
         "LDFLAGS=-L${SESSIONDEPS_DESTDIR}/lib${sessiondeps_apple_ldflags_arch}"
         ${sessiondeps_cross_rc}
         CC_FOR_BUILD=cc

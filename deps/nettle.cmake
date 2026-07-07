@@ -9,7 +9,7 @@ sessiondep_build_external(nettle
     CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} --disable-shared --prefix=${SESSIONDEPS_DESTDIR} --libdir=${SESSIONDEPS_DESTDIR}/lib
         --enable-pic --disable-openssl --disable-documentation
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
-        "CFLAGS=${sessiondeps_CFLAGS}${sessiondeps_apple_cflags_arch}" "CXXFLAGS=${sessiondeps_CXXFLAGS}${sessiondeps_apple_cxxflags_arch}"
+        "CFLAGS=${sessiondeps_CFLAGS}" "CXXFLAGS=${sessiondeps_CXXFLAGS}"
         "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include"
         "LDFLAGS=-L${SESSIONDEPS_DESTDIR}/lib${sessiondeps_apple_ldflags_arch}"
 

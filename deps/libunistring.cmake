@@ -7,7 +7,7 @@ set(LIBUNISTRING_HASH SHA512=864d42b1d4ae4941fe5c8327d6726ab8e3a35d2d5f9d25ce485
 sessiondep_build_external(libunistring
     CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} --disable-shared --prefix=${SESSIONDEPS_DESTDIR} --with-pic
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
-        "CFLAGS=${sessiondeps_CFLAGS}${sessiondeps_apple_cflags_arch}" "CXXFLAGS=${sessiondeps_CXXFLAGS}${sessiondeps_apple_cflags_arch}"
+        "CFLAGS=${sessiondeps_CFLAGS}" "CXXFLAGS=${sessiondeps_CXXFLAGS}"
         "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include" "LDFLAGS=-L${SESSIONDEPS_DESTDIR}/lib${sessiondeps_apple_ldflags_arch}"
         ${sessiondeps_cross_rc}
     BUILD_BYPRODUCTS ${SESSIONDEPS_DESTDIR}/lib/libunistring.a ${SESSIONDEPS_DESTDIR}/include/unistr.h)

@@ -14,8 +14,8 @@ endif()
 sessiondep_build_external(libtasn1
     CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} --disable-shared --disable-doc --prefix=${SESSIONDEPS_DESTDIR} --with-pic
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
-        "CFLAGS=${sessiondeps_CFLAGS}${sessiondeps_apple_cflags_arch}${libtasn_extra_cflags}"
-        "CXXFLAGS=${sessiondeps_CXXFLAGS}${sessiondeps_apple_cflags_arch}${libtasn_extra_cflags}"
+        "CFLAGS=${sessiondeps_CFLAGS}${libtasn_extra_cflags}"
+        "CXXFLAGS=${sessiondeps_CXXFLAGS}${libtasn_extra_cflags}"
         "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include" "LDFLAGS=-L${SESSIONDEPS_DESTDIR}/lib${sessiondeps_apple_ldflags_arch}"
         ${sessiondeps_cross_rc}
     BUILD_BYPRODUCTS ${SESSIONDEPS_DESTDIR}/lib/libtasn1.a ${SESSIONDEPS_DESTDIR}/include/libtasn1.h)

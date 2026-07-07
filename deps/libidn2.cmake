@@ -11,8 +11,8 @@ sessiondep_build_external(libidn2
     PATCH_COMMAND patch -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/libidn2-no-tools.patch
     CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} --disable-shared --disable-doc --prefix=${SESSIONDEPS_DESTDIR} --with-pic
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
-        "CFLAGS=${sessiondeps_CFLAGS}${sessiondeps_apple_cflags_arch}"
-        "CXXFLAGS=${sessiondeps_CXXFLAGS}${sessiondeps_apple_cflags_arch}"
+        "CFLAGS=${sessiondeps_CFLAGS}"
+        "CXXFLAGS=${sessiondeps_CXXFLAGS}"
         ${sessiondeps_cross_rc}
     DEPENDS sessiondep::libunistring
     BUILD_BYPRODUCTS ${SESSIONDEPS_DESTDIR}/lib/libidn2.a ${SESSIONDEPS_DESTDIR}/include/idn2.h)

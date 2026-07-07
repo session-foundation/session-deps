@@ -22,8 +22,8 @@ sessiondep_build_external(icu-io
         --prefix=${SESSIONDEPS_DESTDIR}
         CC=${sessiondeps_cc}
         CXX=${sessiondeps_cxx}
-        "CFLAGS=${sessiondeps_apple_cflags_arch}${sessiondeps_CFLAGS} -std=c11"
-        "CXXFLAGS=${sessiondeps_apple_cxxflags_arch}${sessiondeps_CXXFLAGS} -std=c++20"
+        "CFLAGS=${sessiondeps_CFLAGS} -std=c11"
+        "CXXFLAGS=${sessiondeps_CXXFLAGS} -std=c++20"
     BUILD_COMMAND 
         ${CMAKE_COMMAND} -E env ${libicu_feature_excludes}
         ${sessiondeps_make}

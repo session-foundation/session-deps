@@ -218,8 +218,18 @@ if(SESSIONDEPS_LTO)
 endif()
 
 if(APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET)
-    set(deps_CFLAGS "${deps_CFLAGS} -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
-    set(deps_CXXFLAGS "${deps_CXXFLAGS} -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
+    # Use the SDK-appropriate deployment-target flag: on iOS/simulator/etc. SDK_NAME is set (e.g.
+    # "iphonesimulator" -> -miphonesimulator-version-min), otherwise fall back to macOS.  Passing
+    # -mmacosx-version-min alongside a non-macOS -isysroot makes clang unable to link (autotools
+    # configure then fails with "C compiler cannot create executables").  This mirrors the LDFLAGS
+    # handling above (deps_apple_ldflags_arch).
+    if(SDK_NAME)
+        set(deps_CFLAGS "${deps_CFLAGS} -m${SDK_NAME}-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
+        set(deps_CXXFLAGS "${deps_CXXFLAGS} -m${SDK_NAME}-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
+    else()
+        set(deps_CFLAGS "${deps_CFLAGS} -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
+        set(deps_CXXFLAGS "${deps_CXXFLAGS} -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
+    endif()
 endif()
 
 # Fold the Apple -arch/-isysroot flags into the base compile flags so that *every* dependency picks

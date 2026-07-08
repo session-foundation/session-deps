@@ -239,6 +239,32 @@ endif()
 set(deps_CFLAGS "${deps_CFLAGS}${deps_apple_cflags_arch}")
 set(deps_CXXFLAGS "${deps_CXXFLAGS}${deps_apple_cxxflags_arch}")
 
+# Propagate the C++ standard library selection (e.g. -stdlib=libc++) from the main build to the
+# dependency builds so their C++ ABI matches; otherwise clang defaults to libstdc++ and linking a
+# dep into a libc++ program fails with undefined std::__1 / std::__cxx11 symbols.
+set(deps_cxx_stdlib)
+if(CMAKE_CXX_FLAGS MATCHES "(^| )(-stdlib=[A-Za-z0-9+_-]+)")
+    set(deps_cxx_stdlib "${CMAKE_MATCH_2}")
+    set(deps_CXXFLAGS "${deps_CXXFLAGS} ${deps_cxx_stdlib}")
+endif()
+
+# CMake-based deps (DEFAULT_CMAKE) run their own sub-cmake, which otherwise picks the system default
+# toolchain (e.g. /usr/bin/c++ = libstdc++ on Linux) instead of the one used for the rest of the
+# build.  Forward the compiler, any launcher, and the C++ stdlib so they match.  (Apple arch/sysroot
+# are forwarded separately via deps_cmake_osx_args.)
+set(deps_cmake_toolchain_args
+    "-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}"
+    "-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}")
+if(CMAKE_C_COMPILER_LAUNCHER)
+    list(APPEND deps_cmake_toolchain_args "-DCMAKE_C_COMPILER_LAUNCHER=${CMAKE_C_COMPILER_LAUNCHER}")
+endif()
+if(CMAKE_CXX_COMPILER_LAUNCHER)
+    list(APPEND deps_cmake_toolchain_args "-DCMAKE_CXX_COMPILER_LAUNCHER=${CMAKE_CXX_COMPILER_LAUNCHER}")
+endif()
+if(deps_cxx_stdlib)
+    list(APPEND deps_cmake_toolchain_args "-DCMAKE_CXX_FLAGS=${deps_cxx_stdlib}")
+endif()
+
 
 
 if("${CMAKE_GENERATOR}" STREQUAL "Unix Makefiles")
@@ -251,7 +277,8 @@ endif()
 # that the functions below and build scripts can reference them:
 foreach(var IN ITEMS
         cc cxx ld ranlib ar CFLAGS CXXFLAGS make cross_host raw_cross_host cross_rc
-        android_machine apple_cflags_arch apple_cxxflags_arch apple_ldflags_arch cmake_osx_args)
+        android_machine apple_cflags_arch apple_cxxflags_arch apple_ldflags_arch cmake_osx_args
+        cmake_toolchain_args)
     if(DEFINED deps_${var})
         set(sessiondeps_${var} "${deps_${var}}" CACHE INTERNAL "" FORCE)
     endif()
@@ -289,6 +316,9 @@ function(sessiondep_build_external target)
 
     if(arg_CONFIGURE_COMMAND MATCHES "^DEFAULT_CMAKE")
         set(_default_cmake_args "-DCMAKE_INSTALL_PREFIX=${SESSIONDEPS_DESTDIR}")
+        if(sessiondeps_cmake_toolchain_args)
+            list(APPEND _default_cmake_args ${sessiondeps_cmake_toolchain_args})
+        endif()
         if(sessiondeps_cmake_osx_args)
             list(APPEND _default_cmake_args ${sessiondeps_cmake_osx_args})
         endif()

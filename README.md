@@ -148,6 +148,10 @@ The individual `deps/PKG.cmake` should never be included directly, but only thro
 `session_dep()` function.  Various deps themselves make use of `session_dep()` for sub-dependencies
 and require it to exist when they are invoked.
 
+Important: remember to bump the `session_deps_version` in Deps.cmake when committing a new package
+or fix: when session-deps is loaded from multiple projects in the same build, deps are loaded from
+the instance with the highest version!
+
 More advanced builds may need to do things differently than what the StaticBuild functions allow: if
 so the build is expected to create a `sessiondep_ext_PKG` cmake target carrying the library
 dependencies, include directories, and so on.  This target will be aliased to the sessiondep::PKG

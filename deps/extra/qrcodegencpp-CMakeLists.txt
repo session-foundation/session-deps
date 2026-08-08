@@ -1,0 +1,19 @@
+# Supplied by session-deps: upstream QR-Code-generator ships only a Makefile that builds its demo
+# program, so this provides the static library and install rules the rest of the build expects.
+# Copied into cpp/ by the PATCH_COMMAND in qrcodegencpp.cmake.
+cmake_minimum_required(VERSION 3.13)
+project(qrcodegencpp CXX)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_library(qrcodegencpp STATIC qrcodegen.cpp)
+target_include_directories(qrcodegencpp PUBLIC $<INSTALL_INTERFACE:include>)
+
+include(GNUInstallDirs)
+install(TARGETS qrcodegencpp ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+# Installed flat, not into an include/qrcodegen/ subdirectory.  Debian's package does use that
+# subdirectory, but its qrcodegencpp.pc adds -I.../include/qrcodegen to compensate, whereas
+# session-deps exports only its top-level include/.  Flat here is what makes `#include
+# <qrcodegen.hpp>` resolve under both.
+install(FILES qrcodegen.hpp DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

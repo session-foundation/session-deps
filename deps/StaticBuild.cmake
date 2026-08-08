@@ -325,10 +325,15 @@ function(sessiondep_build_external target)
         string(REGEX REPLACE "^DEFAULT_CMAKE(;?)" "CMAKE_ARGS;${_default_cmake_args}\\1" configure "${arg_CONFIGURE_COMMAND}")
         set(build "")
         set(install "")
+        # CMake projects build out-of-source, and some (utf8proc) refuse in-source outright.
+        set(in_source OFF)
     else()
         set(configure CONFIGURE_COMMAND ${arg_CONFIGURE_COMMAND})
         set(build BUILD_COMMAND ${arg_BUILD_COMMAND})
         set(install INSTALL_COMMAND ${arg_INSTALL_COMMAND})
+        # The default configure command above is a relative ./configure, which resolves only with
+        # the source directory as the working directory.
+        set(in_source ON)
     endif()
 
     set(no_idiotic_extract)
@@ -373,7 +378,7 @@ function(sessiondep_build_external target)
     sessiondep_expand_urls(urls ${${prefix}_SOURCE} ${LOCAL_MIRROR} ${${prefix}_MIRROR})
     ExternalProject_Add("sessiondep_${target}_external"
         DEPENDS ${fixed_depends}
-        BUILD_IN_SOURCE ON
+        BUILD_IN_SOURCE ${in_source}
         PREFIX ${SESSIONDEPS_SOURCEDIR}
         URL ${urls}
         URL_HASH ${${prefix}_HASH}

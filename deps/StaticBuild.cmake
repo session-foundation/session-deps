@@ -265,6 +265,30 @@ if(deps_cxx_stdlib)
     list(APPEND deps_cmake_toolchain_args "-DCMAKE_CXX_FLAGS=${deps_cxx_stdlib}")
 endif()
 
+# CMake-based dependencies need the cross toolchain, not just the compiler binary.  A cross
+# compiler invoked without its target builds for the host, and the result is an archive that
+# links against the wrong platform's standard library -- on Android, libstdc++ symbols that do
+# not exist there.  Autotools deps do not need this because deps_cc above is already the
+# target-prefixed driver.
+#
+# Keyed on the toolchain file rather than on a named platform: it is the thing that decides the
+# target, and if this build used one then a dependency built without it is building something
+# else.  Each toolchain file reads its own variables, so the ones that are set are forwarded and
+# the rest are absent anyway.
+if(CMAKE_TOOLCHAIN_FILE)
+    list(APPEND deps_cmake_toolchain_args "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}")
+
+    foreach(var IN ITEMS
+            # Android NDK's toolchain file
+            ANDROID_ABI ANDROID_PLATFORM ANDROID_STL ANDROID_ARM_MODE
+            # ios-cmake's toolchain file
+            PLATFORM DEPLOYMENT_TARGET ENABLE_BITCODE ENABLE_ARC ENABLE_VISIBILITY ARCHS)
+        if(DEFINED ${var})
+            list(APPEND deps_cmake_toolchain_args "-D${var}=${${var}}")
+        endif()
+    endforeach()
+endif()
+
 
 
 if("${CMAKE_GENERATOR}" STREQUAL "Unix Makefiles")

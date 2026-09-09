@@ -17,7 +17,7 @@ endif()
 
 sessiondep_build_external(libevent
     CONFIGURE_COMMAND ./configure ${libevent_build_host} --prefix=${SESSIONDEPS_DESTDIR}
-    --enable-static --disable-shared
+    --enable-static --disable-shared --with-pic
     --disable-openssl --disable-libevent-regress --disable-samples
     "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include" "LDFLAGS=-L${SESSIONDEPS_DESTDIR}/lib${sessiondeps_apple_ldflags_arch}"
     "CC=${sessiondeps_cc}"

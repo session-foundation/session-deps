@@ -146,11 +146,23 @@ if(ANDROID)
     else()
         message(FATAL_ERROR "unknown android arch: ${CMAKE_ANDROID_ARCH_ABI}")
     endif()
-    set(deps_cc "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/linux-x86_64/bin/${android_compiler_prefix}-${android_compiler_suffix}-clang")
-    set(deps_cxx "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/linux-x86_64/bin/${android_compiler_prefix}-${android_compiler_suffix}-clang++")
-    set(deps_ld "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/linux-x86_64/bin/${android_compiler_prefix}-${android_toolchain_suffix}-ld")
-    set(deps_ranlib "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/linux-x86_64/bin/${android_toolchain_prefix}-${android_toolchain_suffix}-ranlib")
-    set(deps_ar "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/linux-x86_64/bin/${android_toolchain_prefix}-${android_toolchain_suffix}-ar")
+    # The NDK ships one prebuilt toolchain per *host*, and the directory is named for it. Hardcoding
+    # the Linux one meant these autoconf dependencies were pointed at a path that does not exist on
+    # a mac, which surfaces as "C compiler cannot create executables" from configure -- a message
+    # that says nothing about which compiler it could not find. The CMake half of the build never
+    # hit it because the toolchain file resolves the host itself.
+    if(CMAKE_HOST_APPLE)
+        set(android_ndk_host "darwin-x86_64")
+    elseif(CMAKE_HOST_WIN32)
+        set(android_ndk_host "windows-x86_64")
+    else()
+        set(android_ndk_host "linux-x86_64")
+    endif()
+    set(deps_cc "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/${android_ndk_host}/bin/${android_compiler_prefix}-${android_compiler_suffix}-clang")
+    set(deps_cxx "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/${android_ndk_host}/bin/${android_compiler_prefix}-${android_compiler_suffix}-clang++")
+    set(deps_ld "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/${android_ndk_host}/bin/${android_compiler_prefix}-${android_toolchain_suffix}-ld")
+    set(deps_ranlib "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/${android_ndk_host}/bin/${android_toolchain_prefix}-${android_toolchain_suffix}-ranlib")
+    set(deps_ar "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/${android_ndk_host}/bin/${android_toolchain_prefix}-${android_toolchain_suffix}-ar")
 endif()
 
 set(deps_apple_cflags_arch)

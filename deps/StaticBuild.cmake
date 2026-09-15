@@ -160,9 +160,14 @@ if(ANDROID)
     endif()
     set(deps_cc "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/${android_ndk_host}/bin/${android_compiler_prefix}-${android_compiler_suffix}-clang")
     set(deps_cxx "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/${android_ndk_host}/bin/${android_compiler_prefix}-${android_compiler_suffix}-clang++")
-    set(deps_ld "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/${android_ndk_host}/bin/${android_compiler_prefix}-${android_toolchain_suffix}-ld")
-    set(deps_ranlib "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/${android_ndk_host}/bin/${android_toolchain_prefix}-${android_toolchain_suffix}-ranlib")
-    set(deps_ar "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/${android_ndk_host}/bin/${android_toolchain_prefix}-${android_toolchain_suffix}-ar")
+    # **The arch-prefixed binutils are gone.** The NDK dropped `<triple>-ar`, `-ranlib` and `-ld`
+    # in r23; every one of these was a path that does not exist on any NDK this still supports.
+    # A missing AR is not reported: autoconf falls back to a bare `ar` from PATH, so the build
+    # quietly links the dependencies with the *host's* archiver and fails much later, inside
+    # libtool, with "object name conflicts in archive".
+    set(deps_ld "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/${android_ndk_host}/bin/ld.lld")
+    set(deps_ranlib "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/${android_ndk_host}/bin/llvm-ranlib")
+    set(deps_ar "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/${android_ndk_host}/bin/llvm-ar")
 endif()
 
 set(deps_apple_cflags_arch)

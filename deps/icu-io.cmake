@@ -1,10 +1,10 @@
-set(ICU-IO_VERSION 78.2)
+set(ICU-IO_VERSION 78.3)
 set(ICU-IO_MIRROR
     https://github.com/unicode-org/icu/releases/download/release-${ICU-IO_VERSION})
 set(ICU-IO_SOURCE icu4c-${ICU-IO_VERSION}-sources.tgz)
-set(ICU-IO_HASH SHA512=92feddfe81c57336f386c7cbc9f6d976bf349db148a77a247c4559676f51116115c8c52c4d907feb50933f72ab75fd8e48be092bf9c8ca33a3e8fabc9372a5d6)
+set(ICU-IO_HASH SHA512=04a49455e1489030c520a4bfd2664fa2171e7938d08f2acdbbcb1fda976639fd8b1f0704f2eec89ba59a7b6d118ceaab6ec5a096e40d9085a0895d91ce225245)
 set(ICU-IO_DATA icu4c-${ICU-IO_VERSION}-data.zip)
-set(ICU-IO_DATA_SHA512 a78bdf24272d6803d190fcf3504aa6f19ca85b7ce9f273828b192b3824ec48a8d03e6793c4f98de4d89b697b75a4c8e6b6320cfca1438c4cf3d0dd5dbda64edc)
+set(ICU-IO_DATA_SHA512 d584523acb319be1e05489469cda580fb2929f0950c176a59244ef6565faf44f3506fd25d145dce6d8b57be3ff432af033e9ea6d324d2d3538944c5313edf327)
 
 option(LIBICU_SQLITE_ONLY "Builds libicu without things that are used in sqlite's libicu support, such as non-UTF-8 charset handling, timezone, and currency symbols")
 

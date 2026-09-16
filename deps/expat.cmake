@@ -1,8 +1,8 @@
-set(EXPAT_VERSION 2.7.1)
+set(EXPAT_VERSION 2.8.4)
 string(REPLACE "." "_" EXPAT_TAG "R_${EXPAT_VERSION}")
 set(EXPAT_MIRROR https://github.com/libexpat/libexpat/releases/download/${EXPAT_TAG})
 set(EXPAT_SOURCE expat-${EXPAT_VERSION}.tar.xz)
-set(EXPAT_HASH SHA512=4c9a6c1c1769d2c4404da083dd3013dbc73883da50e2b7353db2349a420e9b6d27cac7dbcb645991d6c7cdbf79bd88486fc1ac353084ce48e61081fb56e13d46)
+set(EXPAT_HASH SHA512=00a34340b4fdc3baee6dbd83df3e41710ebffb38dc23664406be187a73f1e948451568fea07b6f33532b6b6244650808ce157255bcf6216d98267535cc97f3cd)
 
 
 sessiondep_build_external(expat

@@ -1,7 +1,7 @@
-set(SIMDUTF_VERSION 8.0.0)
+set(SIMDUTF_VERSION 9.2.0)
 set(SIMDUTF_MIRROR https://github.com/simdutf/simdutf/archive/refs/tags)
 set(SIMDUTF_SOURCE v${SIMDUTF_VERSION}.tar.gz)
-set(SIMDUTF_HASH SHA512=ee30ac7b7b96dfef2ced3938b1cc8e10cd5ec5b3d35ac9679f30fbb7811bf3f930a31f5b4cf0b4002f27eba84d2e27e7c7bd910d96aa04485588188ad910361d)
+set(SIMDUTF_HASH SHA512=3585ad36511ec7fc059fb9ddfea121dd41d7f464fcb376f9d4109e28abbd6e5ed82aa142bb57452a9917827e7e9cba64f132fc136adb14db396276b848fed2ab)
 
 sessiondep_build_external(simdutf
     CONFIGURE_COMMAND DEFAULT_CMAKE

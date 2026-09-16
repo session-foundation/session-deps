@@ -172,7 +172,7 @@ function(session_dep libname minver)
 endfunction()
 
 
-option(DEPS_FORCE_SUBMODULE "For building all submodule dependencies instead of looking for system libraries" OFF)
+option(DEPS_FORCE_SUBMODULE "Force building all submodule dependencies instead of looking for system libraries" OFF)
 
 # This function checks for a system dependency and if found, links to it.  If not found, the given
 # submodule is added.

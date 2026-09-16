@@ -1,8 +1,8 @@
-set(GNUTLS_VERSION 3.8.10)
+set(GNUTLS_VERSION 3.8.13)
 string(REGEX REPLACE "^([0-9]+\\.[0-9]+)\\.[0-9]+$" "\\1" gnutls_version_nopatch "${GNUTLS_VERSION}")
 set(GNUTLS_MIRROR https://www.gnupg.org/ftp/gcrypt/gnutls/v${gnutls_version_nopatch})
 set(GNUTLS_SOURCE gnutls-${GNUTLS_VERSION}.tar.xz)
-set(GNUTLS_HASH SHA512=d453bd4527af95cb3905ce8753ceafd969e3f442ad1d148544a233ebf13285b999930553a805a0511293cc25390bb6a040260df5544a7c55019640f920ad3d92)
+set(GNUTLS_HASH SHA512=71bf189a836fd18d58b9e995d4bfcecdb0aae6129dfd44247b98422b2f127dd868f9905d28fad2ca05afd919a0e6b3c8eebb6b95804067d3a8dab31ebdc72453)
 
 
 session_dep(nettle 3.8 WITH hogweed)

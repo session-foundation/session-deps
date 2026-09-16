@@ -45,11 +45,32 @@ if(LIBICU_SQLITE_ONLY)
     endif()
 
     if(NOT EXISTS "${icu_data_file}")
-        message(STATUS "Downloading ICU data source to rebuild trimmed data (becuse LIBICU_SQLITE_ONLY=ON)")
-        file(DOWNLOAD
-            "${ICU-IO_MIRROR}/${ICU-IO_DATA}"
-            "${icu_data_file}"
-            EXPECTED_HASH SHA512=${ICU-IO_DATA_SHA512})
+        message(STATUS "Downloading ICU data source to rebuild trimmed data (because LIBICU_SQLITE_ONLY=ON)")
+
+        # Unlike the tarball, which sessiondep_build_external() routes through LOCAL_MIRROR for us,
+        # this download is ours to make, so it has to consult the mirror itself.  The hash is
+        # checked by hand rather than with EXPECTED_HASH so that a bad copy on one mirror falls
+        # through to the next instead of failing the configure outright.
+        sessiondep_expand_urls(icu_data_urls ${ICU-IO_DATA} ${LOCAL_MIRROR} ${ICU-IO_MIRROR})
+        foreach(url IN LISTS icu_data_urls)
+            file(DOWNLOAD "${url}" "${icu_data_file}" STATUS icu_data_status)
+            list(GET icu_data_status 0 icu_data_code)
+            if(icu_data_code EQUAL 0)
+                file(SHA512 "${icu_data_file}" icu_data_hash)
+                if("${icu_data_hash}" STREQUAL "${ICU-IO_DATA_SHA512}")
+                    break()
+                endif()
+                message(STATUS "${url}: hash mismatch, trying next mirror")
+            else()
+                list(GET icu_data_status 1 icu_data_error)
+                message(STATUS "${url}: ${icu_data_error}, trying next mirror")
+            endif()
+            file(REMOVE "${icu_data_file}")
+        endforeach()
+
+        if(NOT EXISTS "${icu_data_file}")
+            message(FATAL_ERROR "Failed to fetch ${ICU-IO_DATA} from any of: ${icu_data_urls}")
+        endif()
     endif()
 
     set(icu_src "${SESSIONDEPS_SOURCEDIR}/src/sessiondep_icu-io_external/source")

@@ -67,7 +67,7 @@ sessiondep_build_external(sqlite3mc
         #   to anything else here that is authenticated (nor are they widely used enough for us to
         #   worry about offering compatibility).
         --disable-cipher-rc4 --disable-cipher-aes128cbc --disable-cipher-aes256cbc
-        "CC=${sessiondeps_cc}" "CFLAGS=${sessiondeps_CFLAGS}" ${sessiondeps_cross_extra}
+        "CC=${sessiondeps_cc}" "CFLAGS=${sessiondeps_CFLAGS}" ${sessiondeps_cross_rc}
     BUILD_COMMAND ${sessiondeps_make} ${sqlite3mc_build_targets}
     INSTALL_COMMAND ${sessiondeps_make} ${sqlite3mc_install_targets}
         ${sqlite3mc_install_shell}
@@ -76,3 +76,10 @@ sessiondep_build_external(sqlite3mc
 )
 
 sessiondep_static_simple(sqlite3mc ${sqlite3mc_deps})
+
+# --disable-load-extension above omits sqlite3_load_extension()/sqlite3_enable_load_extension() from
+# the library, but nothing in the installed sqlite3.h records that, so anything compiling against
+# this would happily emit calls to them and then fail to link.  This is the macro sqlite itself uses
+# for the same build option, and is what wrappers (SQLiteCpp, for one) check to compile out their
+# extension loading.
+target_compile_definitions(sessiondep_ext_sqlite3mc INTERFACE SQLITE_OMIT_LOAD_EXTENSION)

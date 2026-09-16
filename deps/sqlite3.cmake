@@ -11,4 +11,13 @@
 # `session_dep(sqlite3mc <minver>)` when the encryption support specifically is required.
 session_dep(sqlite3mc 2)
 
+# sqlite3mc's own version is unrelated to the sqlite version it bundles, so the minimum requested
+# here has to be checked against the latter by hand; without this a caller asking for a sqlite newer
+# than the fallback carries would silently get the older one.
+if(minver VERSION_GREATER SESSIONDEPS_SQLITE3MC_SQLITE_VERSION)
+    message(FATAL_ERROR
+        "sqlite3>=${minver} was requested, but no system sqlite3 satisfied it and the sqlite3mc "
+        "fallback only bundles sqlite ${SESSIONDEPS_SQLITE3MC_SQLITE_VERSION}")
+endif()
+
 sessiondep_bundle(sqlite3 sessiondep::sqlite3mc)

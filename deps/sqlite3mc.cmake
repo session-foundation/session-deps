@@ -1,9 +1,13 @@
-set(SQLITE3MC_VERSION 2.3.2)
-set(SQLITE3MC_SQLITE_VERSION 3.51.3)
+set(SQLITE3MC_VERSION 2.5.1)
+set(SQLITE3MC_SQLITE_VERSION 3.53.4)
 set(SQLITE3MC_MIRROR
     https://github.com/utelle/SQLite3MultipleCiphers/releases/download/v${SQLITE3MC_VERSION})
 set(SQLITE3MC_SOURCE sqlite3mc-${SQLITE3MC_VERSION}-sqlite-${SQLITE3MC_SQLITE_VERSION}-autoconf.tar.gz)
-set(SQLITE3MC_HASH SHA512=cf58605cd00632cc47b7114868c735997715c91f0f306707e8405ab848056fbcf78c273d7ac2fa6995cad3cff8176a07ec5ba5b58b121b653e985cd2a57a908c)
+set(SQLITE3MC_HASH SHA256=748fa6d6eef9227f0bdb1909898746ad6850e3c3fb069a955d6cda2608957211)
+
+# So that deps/sqlite3.cmake can tell whether this fallback is new enough for a caller's requested
+# sqlite version:
+set(SESSIONDEPS_SQLITE3MC_SQLITE_VERSION ${SQLITE3MC_SQLITE_VERSION} CACHE INTERNAL "")
 
 
 option(SQLITE3MC_WITH_LIBICU "Build with libicu support" OFF)

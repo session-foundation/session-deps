@@ -1,0 +1,27 @@
+The nettle backend of util/random.c seeds yarrow from getentropy(3), but nothing
+declares it on Darwin:
+
+    util/random.c:192:5: error: call to undeclared function 'getentropy'; ISO C99
+    and later do not support implicit function declarations
+
+config.h declares getentropy itself only under `#ifndef HAVE_ARC4RANDOM`, i.e. on
+the platforms where unbound also has to supply an implementation from compat/.
+Darwin has arc4random, so it gets no declaration from there, and unlike glibc it
+does not declare getentropy in <unistd.h> either.  The combination only shows up
+with --with-nettle, since an openssl or libbsd build takes the arc4random branch
+of this file and never reaches the nettle one.
+
+--- a/util/random.c
++++ b/util/random.c
+@@ -70,6 +70,11 @@
+ #include "pk11pub.h"
+ #elif defined(HAVE_NETTLE)
+ #include "yarrow.h"
++#ifdef __APPLE__
++/* Darwin declares getentropy(3), which seeds yarrow below, in <sys/random.h> rather than
++ * <unistd.h>; config.h declares it itself only on the platforms where unbound supplies it. */
++#include <sys/random.h>
++#endif
+ #endif
+ 
+ /** 

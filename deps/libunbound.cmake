@@ -4,14 +4,12 @@ set(LIBUNBOUND_SOURCE unbound-${LIBUNBOUND_VERSION}.tar.gz)
 set(LIBUNBOUND_HASH SHA256=35a6dc0e425a9282c3426d9a3043144011bf0534aed4b73ab62c52aee0af1503)
 
 
-set(unbound_patch
-    PATCH_COMMAND patch -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/unbound-nettle4.patch)
-
 session_dep(nettle 3.6 WITH hogweed)
 session_dep(expat 2)
 
 sessiondep_build_external(libunbound
-    ${unbound_patch}
+    PATCH_COMMAND patch -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/unbound-nettle4.patch
+    COMMAND patch -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/unbound-macos-getentropy.patch
     CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} ${sessiondeps_cross_rc} --prefix=${SESSIONDEPS_DESTDIR}
     --with-libunbound-only --disable-shared --enable-static
     --with-pic --$<IF:$<BOOL:${SESSIONDEPS_LTO}>,enable,disable>-flto

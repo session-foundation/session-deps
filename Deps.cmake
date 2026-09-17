@@ -237,21 +237,36 @@ function(check_submodule relative_path)
         set(arg_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
     endif()
 
-    file(RELATIVE_PATH display_path "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/${relative_path}")
-    execute_process(COMMAND git rev-parse "HEAD" WORKING_DIRECTORY "${arg_WORKING_DIRECTORY}/${relative_path}" OUTPUT_VARIABLE localHead)
-    execute_process(COMMAND git rev-parse "HEAD:./${relative_path}" WORKING_DIRECTORY "${arg_WORKING_DIRECTORY}" OUTPUT_VARIABLE checkedHead)
-    string(COMPARE EQUAL "${localHead}" "${checkedHead}" upToDate)
+    file(RELATIVE_PATH display_path "${PROJECT_SOURCE_DIR}" "${arg_WORKING_DIRECTORY}/${relative_path}")
+    execute_process(COMMAND git rev-parse "HEAD"
+        WORKING_DIRECTORY "${arg_WORKING_DIRECTORY}/${relative_path}"
+        OUTPUT_VARIABLE localHead RESULT_VARIABLE local_result ERROR_QUIET)
+    execute_process(COMMAND git rev-parse "HEAD:./${relative_path}"
+        WORKING_DIRECTORY "${arg_WORKING_DIRECTORY}"
+        OUTPUT_VARIABLE checkedHead RESULT_VARIABLE checked_result ERROR_QUIET)
+
+    # A git call that fails leaves its output variable empty, and two empty strings compare equal,
+    # so without checking the result an uncheckable submodule reports as up-to-date.
+    if(local_result EQUAL 0 AND checked_result EQUAL 0)
+        string(COMPARE EQUAL "${localHead}" "${checkedHead}" upToDate)
+        set(problem "is not up-to-date (${localHead} ${checkedHead})")
+    else()
+        set(upToDate FALSE)
+        set(problem "could not be checked; is it initialized?")
+    endif()
+
     if (upToDate)
         message(STATUS "Submodule '${display_path}' is up-to-date")
     elseif(SUBMODULE_CHECK)
-        message(FATAL_ERROR "Submodule '${display_path}' is not up-to-date (${localHead} ${checkedHead}). Please update with\ngit submodule update --init --recursive\nor run cmake with -DSUBMODULE_CHECK=OFF")
+        message(FATAL_ERROR "Submodule '${display_path}' ${problem}. Please update with\ngit submodule update --init --recursive\nor run cmake with -DSUBMODULE_CHECK=OFF")
     else()
-        message(WARNING "Submodule '${display_path}' is not up-to-date")
+        message(WARNING "Submodule '${display_path}' ${problem}")
     endif()
 
-    # Extra arguments check nested submodules
+    # Extra arguments check nested submodules; the working directory has to stay absolute, as the
+    # default does, because execute_process resolves a relative one against the build directory.
     foreach(submod IN LISTS arg_UNPARSED_ARGUMENTS)
-        check_submodule("${submod}" WORKING_DIRECTORY "${relative_path}")
+        check_submodule("${submod}" WORKING_DIRECTORY "${arg_WORKING_DIRECTORY}/${relative_path}")
     endforeach()
 endfunction ()
 

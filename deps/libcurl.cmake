@@ -43,7 +43,12 @@ sessiondep_build_external(libcurl
         --without-fish-functions-dir --without-zsh-functions-dir
         "PKG_CONFIG_LIBDIR=${SESSIONDEPS_DESTDIR}/lib/pkgconfig" "PKG_CONFIG=pkg-config"
         "LIBS=${curl_tls_libs}"
-        "CC=${sessiondeps_cc}" "CFLAGS=${sessiondeps_CFLAGS}"
+        # curl picks a platform memzero by what configure could link, not by what is declared, so a
+        # libc carrying memset_explicit without declaring it under the standard in effect fails to
+        # build.  _CURL_LOCAL_MEMZERO is upstream's escape hatch for that, and uses curl's own
+        # implementation instead of selecting one.  It is marked "to be removed after a couple of
+        # releases", so this will need revisiting.
+        "CC=${sessiondeps_cc}" "CFLAGS=${sessiondeps_CFLAGS} -D_CURL_LOCAL_MEMZERO"
         "LDFLAGS=${sessiondeps_ldflags}"
         ${sessiondeps_cross_rc}
     # Only lib/ and include/: the top-level targets additionally build the curl command line tool.

@@ -322,8 +322,13 @@ endforeach()
 #
 # Each target is emitted before the things it links to, which is the order a single-pass static link
 # needs.
+#
+# Libraries are named with -l against a -L search path rather than by their path, because libtool
+# takes a .a named on a link line to be a convenience archive and copies its members into whatever
+# it is building -- which gets you a libcurl.a with libgnutls.a sitting inside it as a member.
 function(sessiondep_link_flags out_var)
     set(result)
+    set(libdirs)
     set(seen)
     set(queue ${ARGN})
     while(queue)
@@ -351,7 +356,13 @@ function(sessiondep_link_flags out_var)
             endif()
             get_target_property(location ${item} IMPORTED_LOCATION)
             if(location)
-                list(APPEND result "${location}")
+                get_filename_component(libdir "${location}" DIRECTORY)
+                get_filename_component(libname "${location}" NAME_WE)
+                string(REGEX REPLACE "^lib" "" libname "${libname}")
+                if(NOT "-L${libdir}" IN_LIST libdirs)
+                    list(APPEND libdirs "-L${libdir}")
+                endif()
+                list(APPEND result "-l${libname}")
             endif()
             get_target_property(linked ${item} INTERFACE_LINK_LIBRARIES)
             if(linked)
@@ -363,7 +374,8 @@ function(sessiondep_link_flags out_var)
             list(APPEND result "-l${item}")
         endif()
     endwhile()
-    set(${out_var} "${result}" PARENT_SCOPE)
+    list(APPEND libdirs ${result})
+    set(${out_var} "${libdirs}" PARENT_SCOPE)
 endfunction()
 
 # Builds a target; takes the target name (e.g. "readline") and builds it in an external project with

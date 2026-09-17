@@ -73,10 +73,11 @@ local mac_pipeline(name, arch='amd64', jobs=6, allow_fail=false) = {
 
 [
   linux_pipeline('Debian sid (amd64)', docker_base + 'debian-sid'),
-  linux_pipeline('Debian bookworm (arm64)', docker_base + 'debian-bookworm', arch='arm64'),
+  // The arm builders run out of memory above 4 concurrent compiles.
+  linux_pipeline('Debian bookworm (arm64)', docker_base + 'debian-bookworm', arch='arm64', jobs=4),
   linux_pipeline('Ubuntu jammy (amd64)', docker_base + 'ubuntu-jammy'),
   // armhf is built on an arm64 machine, as the 32-bit runners are.
-  linux_pipeline('Debian trixie (armhf)', docker_base + 'debian-trixie/arm32v7', arch='arm64'),
+  linux_pipeline('Debian trixie (armhf)', docker_base + 'debian-trixie/arm32v7', arch='arm64', jobs=4),
 
   linux_pipeline('Windows x64 (mingw)',
                  docker_base + 'debian-sid',

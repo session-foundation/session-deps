@@ -63,5 +63,8 @@ elseif(APPLE)
         "-framework SystemConfiguration")
 endif()
 
-sessiondep_static_simple(libcurl sessiondep::libssl sessiondep::zlib ${libcurl_extra_deps})
+# Must match the TLS libraries configure link-tested against (curl_tls_libs above), in that order.
+sessiondep_static_simple(libcurl
+    sessiondep::gnutls sessiondep::hogweed sessiondep::nettle sessiondep::zlib
+    ${libcurl_extra_deps})
 target_compile_definitions(sessiondep_ext_libcurl INTERFACE CURL_STATICLIB)

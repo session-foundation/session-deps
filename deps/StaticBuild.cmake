@@ -308,6 +308,60 @@ foreach(var IN ITEMS
     endif()
 endforeach()
 
+# Flattens cmake targets into a plain linker argument list, for handing to a build system that has
+# never heard of cmake -- an autotools `LIBS=`, typically.  Takes an output variable followed by any
+# number of targets or link items.
+#
+# This exists so that a dep whose build system needs to be told about another dep does not have to
+# restate that dep's own link requirements: cmake already worked them out, whether it built the
+# library or found a system one, and this asks it rather than guessing.
+#
+# Each target is emitted before the things it links to, which is the order a single-pass static link
+# needs.
+function(sessiondep_link_flags out_var)
+    set(result)
+    set(seen)
+    set(queue ${ARGN})
+    while(queue)
+        list(POP_FRONT queue item)
+
+        # $<LINK_ONLY:x> is just x as far as a link line is concerned; any other generator
+        # expression we cannot evaluate here, and emitting it raw would be worse than omitting it.
+        if(item MATCHES "^\\$<LINK_ONLY:(.*)>$")
+            set(item "${CMAKE_MATCH_1}")
+        endif()
+        if(item MATCHES "^\\$<")
+            continue()
+        endif()
+
+        if(item IN_LIST seen)
+            continue()
+        endif()
+        list(APPEND seen "${item}")
+
+        if(TARGET ${item})
+            get_target_property(alias ${item} ALIASED_TARGET)
+            if(alias)
+                list(APPEND queue ${alias})
+                continue()
+            endif()
+            get_target_property(location ${item} IMPORTED_LOCATION)
+            if(location)
+                list(APPEND result "${location}")
+            endif()
+            get_target_property(linked ${item} INTERFACE_LINK_LIBRARIES)
+            if(linked)
+                list(APPEND queue ${linked})
+            endif()
+        elseif(item MATCHES "^-" OR IS_ABSOLUTE "${item}")
+            list(APPEND result "${item}")
+        else()
+            list(APPEND result "-l${item}")
+        endif()
+    endwhile()
+    set(${out_var} "${result}" PARENT_SCOPE)
+endfunction()
+
 # Builds a target; takes the target name (e.g. "readline") and builds it in an external project with
 # target name suffixed with `_external`.  Its upper-case value is used to get the download details
 # (from the variables set above).  The following options are supported and passed through to

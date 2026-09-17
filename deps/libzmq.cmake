@@ -6,18 +6,8 @@ set(LIBZMQ_HASH SHA512=a71d48aa977ad8941c1609947d8db2679fc7a951e4cd0c3a1127ae026
 
 session_dep(libsodium 1.0.17)
 
-if(CMAKE_CROSSCOMPILING AND ARCH_TRIPLET MATCHES mingw)
-  set(zmq_patch PATCH_COMMAND
-        patch -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/libzmq-mingw-unistd.patch
-        # This patch is apparently somewhat crashy when used, so not currently applied:
-        #COMMAND patch -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/libzmq-mingw-wepoll.patch
-  )
-endif()
-
-
 sessiondep_build_external(libzmq
     DEPENDS sessiondep::libsodium
-    ${zmq_patch}
     CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} --prefix=${SESSIONDEPS_DESTDIR} --enable-static --disable-shared
       --disable-curve-keygen --enable-curve --disable-drafts --disable-libunwind --with-libsodium
       --without-pgm --without-norm --without-vmci --without-docs --with-pic --disable-Werror --disable-libbsd

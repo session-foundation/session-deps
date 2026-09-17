@@ -32,8 +32,12 @@ sessiondep_build_external(gnutls
     ${SESSIONDEPS_DESTDIR}/lib/libgnutls.a
     ${SESSIONDEPS_DESTDIR}/include/gnutls/gnutls.h
 )
+# hogweed before nettle: cmake orders the final link from the target graph regardless, but
+# sessiondep_link_flags() emits these in the order given, and a static link line needs hogweed's
+# archive ahead of the nettle archive that satisfies it (hogweed's RSA code calls
+# nettle_cnd_memcpy, for one).  Recipes that hand configure a link line for gnutls depend on this.
 sessiondep_static_simple(gnutls
-    sessiondep::nettle sessiondep::hogweed sessiondep::libidn2 sessiondep::libtasn1)
+    sessiondep::hogweed sessiondep::nettle sessiondep::libidn2 sessiondep::libtasn1)
 
 sessiondep_override_find_package(
     GnuTLS

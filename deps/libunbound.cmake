@@ -4,10 +4,8 @@ set(LIBUNBOUND_SOURCE unbound-${LIBUNBOUND_VERSION}.tar.gz)
 set(LIBUNBOUND_HASH SHA256=35a6dc0e425a9282c3426d9a3043144011bf0534aed4b73ab62c52aee0af1503)
 
 
-if(WIN32)
-    set(unbound_patch
-        PATCH_COMMAND patch -p0 -i ${CMAKE_CURRENT_LIST_DIR}/patches/unbound-delete-crash-fix.patch)
-endif()
+set(unbound_patch
+    PATCH_COMMAND patch -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/unbound-nettle4.patch)
 
 session_dep(nettle 3.6 WITH hogweed)
 session_dep(expat 2)

@@ -13,17 +13,47 @@ if(LIBICU_SQLITE_ONLY)
     set(libicu_feature_excludes "ICU_DATA_FILTER_FILE=${CMAKE_CURRENT_LIST_DIR}/extra/libicu_sqlite_excludes.json")
 endif()
 
+# ICU generates its data by running tools it has just built, so a cross build cannot produce its own
+# and has to be handed a native build of the same version to take them from.
+set(icu_native_dep)
+set(icu_cross_build)
+if(CMAKE_CROSSCOMPILING)
+    set(icu_native_root ${SESSIONDEPS_SOURCEDIR}/src/sessiondep_icu-io-native_external)
+
+    sessiondep_expand_urls(icu_native_urls ${ICU-IO_SOURCE} ${LOCAL_MIRROR} ${ICU-IO_MIRROR})
+    ExternalProject_Add(sessiondep_icu-io-native_external
+        BUILD_IN_SOURCE ON
+        PREFIX ${SESSIONDEPS_SOURCEDIR}
+        URL ${icu_native_urls}
+        URL_HASH ${ICU-IO_HASH}
+        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+        DOWNLOAD_NO_PROGRESS ON
+        # No cross host, no toolchain overrides, and no --prefix: this one runs on the build machine
+        # and is never installed.  Only its build tree is consumed.
+        CONFIGURE_COMMAND ./source/configure --enable-static --disable-shared
+            --disable-icu-config --disable-strict --disable-dyload
+            --disable-tests --disable-samples --with-data-packaging=static
+        BUILD_COMMAND ${sessiondeps_make}
+        INSTALL_COMMAND ""
+    )
+
+    set(icu_native_dep DEPENDS sessiondep_icu-io-native_external)
+    set(icu_cross_build --with-cross-build=${icu_native_root})
+endif()
+
 sessiondep_build_external(icu-io
+    ${icu_native_dep}
+    PATCH_COMMAND patch -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/icu-mingw-static-libraries-without-s.patch
     CONFIGURE_COMMAND
         ${CMAKE_COMMAND} -E env ${libicu_feature_excludes}
-        ./source/configure ${sessiondeps_cross_host} --enable-static
+        ./source/configure ${sessiondeps_cross_host} ${icu_cross_build} --enable-static
         --disable-shared --disable-icu-config --disable-strict --disable-dyload
         --disable-tests --disable-samples --with-data-packaging=static
         --prefix=${SESSIONDEPS_DESTDIR}
         CC=${sessiondeps_cc}
         CXX=${sessiondeps_cxx}
-        "CFLAGS=${sessiondeps_CFLAGS} -std=c11"
-        "CXXFLAGS=${sessiondeps_CXXFLAGS} -std=c++20"
+        "CFLAGS=${sessiondeps_CFLAGS}"
+        "CXXFLAGS=${sessiondeps_CXXFLAGS}"
     BUILD_COMMAND 
         ${CMAKE_COMMAND} -E env ${libicu_feature_excludes}
         ${sessiondeps_make}

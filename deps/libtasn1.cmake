@@ -16,7 +16,7 @@ sessiondep_build_external(libtasn1
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
         "CFLAGS=${sessiondeps_CFLAGS}${libtasn_extra_cflags}"
         "CXXFLAGS=${sessiondeps_CXXFLAGS}${libtasn_extra_cflags}"
-        "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include" "LDFLAGS=-L${SESSIONDEPS_DESTDIR}/lib${sessiondeps_apple_ldflags_arch}"
+        "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include" "LDFLAGS=${sessiondeps_ldflags}"
         ${sessiondeps_cross_rc}
     BUILD_BYPRODUCTS ${SESSIONDEPS_DESTDIR}/lib/libtasn1.a ${SESSIONDEPS_DESTDIR}/include/libtasn1.h)
 

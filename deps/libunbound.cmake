@@ -18,7 +18,7 @@ sessiondep_build_external(libunbound
     --with-nettle=${SESSIONDEPS_DESTDIR} --with-libexpat=${SESSIONDEPS_DESTDIR}
     --without-ssl
     "CC=${sessiondeps_cc}" "CFLAGS=${sessiondeps_CFLAGS}"
-    "LDFLAGS=-L${SESSIONDEPS_DESTDIR}/lib${sessiondeps_apple_ldflags_arch}"
+    "LDFLAGS=${sessiondeps_ldflags}"
     DEPENDS sessiondep::nettle sessiondep::hogweed sessiondep::expat
 )
 

@@ -22,7 +22,7 @@ sessiondep_build_external(gnutls
         --without-zlib --without-brotli --without-zstd --without-libintl-prefix --disable-tests
         --disable-valgrind-tests --disable-full-test-suite --disable-tools
         "PKG_CONFIG_LIBDIR=${SESSIONDEPS_DESTDIR}/lib/pkgconfig" "PKG_CONFIG=pkg-config"
-        "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include" "LDFLAGS=-L${SESSIONDEPS_DESTDIR}/lib${sessiondeps_apple_ldflags_arch}"
+        "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include" "LDFLAGS=${sessiondeps_ldflags}"
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
         "CFLAGS=${sessiondeps_CFLAGS}"
         "CXXFLAGS=${sessiondeps_CXXFLAGS}"

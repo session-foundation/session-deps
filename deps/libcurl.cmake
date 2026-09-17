@@ -44,7 +44,7 @@ sessiondep_build_external(libcurl
         "PKG_CONFIG_LIBDIR=${SESSIONDEPS_DESTDIR}/lib/pkgconfig" "PKG_CONFIG=pkg-config"
         "LIBS=${curl_tls_libs}"
         "CC=${sessiondeps_cc}" "CFLAGS=${sessiondeps_CFLAGS}"
-        "LDFLAGS=-L${SESSIONDEPS_DESTDIR}/lib${sessiondeps_apple_ldflags_arch}"
+        "LDFLAGS=${sessiondeps_ldflags}"
         ${sessiondeps_cross_rc}
     # Only lib/ and include/: the top-level targets additionally build the curl command line tool.
     BUILD_COMMAND ${sessiondeps_make} -C lib

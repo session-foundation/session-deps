@@ -12,7 +12,7 @@ sessiondep_build_external(libgmp
     CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} --disable-shared --prefix=${SESSIONDEPS_DESTDIR} --with-pic
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
         "CFLAGS=${sessiondeps_CFLAGS}" "CXXFLAGS=${sessiondeps_CXXFLAGS}"
-        "LDFLAGS=-L${SESSIONDEPS_DESTDIR}/lib${sessiondeps_apple_ldflags_arch}"
+        "LDFLAGS=${sessiondeps_ldflags}"
         ${sessiondeps_cross_rc}
         CC_FOR_BUILD=cc
         CPP_FOR_BUILD=cpp

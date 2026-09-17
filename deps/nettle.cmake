@@ -11,7 +11,7 @@ sessiondep_build_external(nettle
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
         "CFLAGS=${sessiondeps_CFLAGS}" "CXXFLAGS=${sessiondeps_CXXFLAGS}"
         "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include"
-        "LDFLAGS=-L${SESSIONDEPS_DESTDIR}/lib${sessiondeps_apple_ldflags_arch}"
+        "LDFLAGS=${sessiondeps_ldflags}"
 
     DEPENDS sessiondep::libgmp
     BUILD_BYPRODUCTS

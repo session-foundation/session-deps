@@ -208,6 +208,11 @@ endif()
 set(deps_CFLAGS "-O2")
 set(deps_CXXFLAGS "-O2")
 
+# Every autotools dep needs to be pointed at the destdir it and its siblings install into, so keep
+# that (and the apple arch flags that have to ride along with it) in one place rather than having
+# each build spell it out.
+set(deps_ldflags "-L${SESSIONDEPS_DESTDIR}/lib${deps_apple_ldflags_arch}")
+
 set(default_lto ON)
 if(WIN32)
     set(default_lto OFF)
@@ -235,7 +240,7 @@ endif()
 # Fold the Apple -arch/-isysroot flags into the base compile flags so that *every* dependency picks
 # them up, rather than requiring each dep script to remember to append them (which is error-prone --
 # several deps did not, and built for the host arch during a cross build).  These are empty except on
-# an Apple cross build.  LDFLAGS remain separate (sessiondeps_apple_ldflags_arch), applied per-dep.
+# an Apple cross build.  The link-time equivalents are folded into deps_ldflags, above.
 set(deps_CFLAGS "${deps_CFLAGS}${deps_apple_cflags_arch}")
 set(deps_CXXFLAGS "${deps_CXXFLAGS}${deps_apple_cxxflags_arch}")
 
@@ -300,9 +305,8 @@ endif()
 # Promote any variables set above as `deps_whatever` to a cache variable `sessiondeps_whatever` so
 # that the functions below and build scripts can reference them:
 foreach(var IN ITEMS
-        cc cxx CFLAGS CXXFLAGS make cross_host raw_cross_host cross_rc
-        android_machine apple_cflags_arch apple_cxxflags_arch apple_ldflags_arch cmake_osx_args
-        cmake_toolchain_args)
+        cc cxx CFLAGS CXXFLAGS ldflags make cross_host raw_cross_host cross_rc
+        android_machine cmake_osx_args cmake_toolchain_args)
     if(DEFINED deps_${var})
         set(sessiondeps_${var} "${deps_${var}}" CACHE INTERNAL "" FORCE)
     endif()

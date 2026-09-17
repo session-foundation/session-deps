@@ -157,3 +157,31 @@ so the build is expected to create a `sessiondep_ext_PKG` cmake target carrying 
 dependencies, include directories, and so on.  This target will be aliased to the sessiondep::PKG
 target when doing a static build.  It is acceptable for that target to be an interface library (e.g.
 to link to multiple sub-targets).
+
+## Rejecting unsuitable system packages
+
+Sometimes a system package is present and new enough and still cannot be used, for reasons its
+version does not express: typically something about what it was built against.  A `check/PKG.cmake`
+file, if one exists, is included immediately after `session_dep()` finds a system PKG and gets a
+say.  Setting `sessiondep_reject_system` to a short reason rejects it, which falls back to the
+static build exactly as not having found it would:
+
+    # check/libfoo.cmake
+    if(<some test that says the system libfoo won't do>)
+        set(sessiondep_reject_system "was built without widget support")
+    endif()
+
+producing, at configure time:
+
+    -- Found libfoo 1.2.3 but it was built without widget support; falling back to static build
+
+Note that this is for packages that are genuinely unusable, not merely not preferred: rejecting one
+means building it instead, so a check that is too eager costs everyone build time.  The reason
+string is shown to whoever is building, so it should say what is wrong in a way that suggests what
+to install instead.
+
+`check/libcurl.cmake` is the worked example: a system libcurl that brings in an ngtcp2 crypto
+backend other than the gnutls one cannot coexist with liboxenquic in the same process, because
+ngtcp2's backends all export the same symbols, so whichever the loader reaches first is used by
+both.  A libcurl built against a different TLS library but with no HTTP/3 at all is fine, which is
+why that check tests for the ngtcp2 backend rather than for the TLS library.

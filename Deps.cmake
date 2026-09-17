@@ -9,7 +9,7 @@ include_guard(GLOBAL)
 # If different versions of this script gets loaded from different places we want to defer to the
 # functions set in the most recent version as it may have fixes or new deps in it that an older
 # version is missing, and so we let later versions overwrite the functions of earlier versions.
-set(session_deps_version 1.11)
+set(session_deps_version 1.12)
 
 get_property(_sdep_loaded_version GLOBAL PROPERTY _sdep_loaded_version)
 
@@ -122,6 +122,18 @@ function(session_dep libname minver)
             string(MAKE_C_IDENTIFIER "sessiondep_${n}_${minver}" DEP)
             pkg_check_modules(${DEP} IMPORTED_TARGET GLOBAL ${n}>=${minver})
             if(${DEP}_FOUND)
+                # Being present and new enough is not always sufficient: a system package can be
+                # unusable because of what it was built against, which its version does not show.
+                # check/<name>.cmake, if it exists, gets a say, and setting sessiondep_reject_system
+                # to a reason rejects it exactly as not finding it would.
+                set(sessiondep_reject_system)
+                include("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/check/${n}.cmake" OPTIONAL)
+                if(sessiondep_reject_system)
+                    set(build_static TRUE)
+                    message(STATUS "Found ${n} ${${DEP}_VERSION} but it ${sessiondep_reject_system}; falling back to static build")
+                    break()
+                endif()
+
                 message(STATUS "Found ${n} ${${DEP}_VERSION} (>= required ${minver})")
                 list(APPEND link_to PkgConfig::${DEP})
                 if("${dep_ver}" STREQUAL "")

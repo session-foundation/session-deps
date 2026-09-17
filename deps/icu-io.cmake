@@ -30,6 +30,7 @@ sessiondep_build_external(icu-io
     BUILD_BYPRODUCTS
         ${SESSIONDEPS_DESTDIR}/lib/libicudata.a
         ${SESSIONDEPS_DESTDIR}/lib/libicui18n.a
+        ${SESSIONDEPS_DESTDIR}/lib/libicuio.a
         ${SESSIONDEPS_DESTDIR}/lib/libicuuc.a
         ${SESSIONDEPS_DESTDIR}/include/unicode/utypes.h
 )

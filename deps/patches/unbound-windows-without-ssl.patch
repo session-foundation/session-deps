@@ -1,0 +1,94 @@
+Several Windows-only blocks are guarded on USE_WINSOCK alone although their
+bodies are entirely OpenSSL, so a --without-ssl build for Windows does not
+compile:
+
+    util/net_help.c:1467:34: error: unknown type name 'SSL_CTX'
+    util/netevent.c:3143:24: error: unknown type name 'BIO'
+
+add_WIN_cacerts_to_openssl_store() loads the wincrypt trust store into an
+SSL_CTX, and win_bio_cb() exists so that a TLS read or write can surface
+Winsock's WSAEWOULDBLOCK to the event loop; neither means anything without
+OpenSSL.  Their callers already sit inside #ifdef HAVE_SSL or a runtime
+`if(ssl)` branch, so the definitions, the declaration and the three call
+sites just need the same condition.
+
+--- a/util/net_help.c
++++ b/util/net_help.c
+@@ -1459,7 +1459,7 @@
+ #endif /* HAVE_SSL */
+ }
+ 
+-#ifdef USE_WINSOCK
++#if defined(USE_WINSOCK) && defined(HAVE_SSL)
+ /* For windows, the CA trust store is not read by openssl.
+    Add code to open the trust store using wincrypt API and add
+    the root certs into openssl trust store */
+@@ -1549,7 +1549,7 @@
+ 	verbose(VERB_ALGO, "Completed adding Windows certificates to CA store successfully");
+ 	return 1;
+ }
+-#endif /* USE_WINSOCK */
++#endif /* USE_WINSOCK && HAVE_SSL */
+ 
+ void* connect_sslctx_create(char* key, char* pem, char* verifypem, int wincert)
+ {
+--- a/util/netevent.c
++++ b/util/netevent.c
+@@ -3139,7 +3139,7 @@
+ 	return new_fd;
+ }
+ 
+-#ifdef USE_WINSOCK
++#if defined(USE_WINSOCK) && defined(HAVE_SSL)
+ static long win_bio_cb(BIO *b, int oper, const char* ATTR_UNUSED(argp),
+ #ifdef HAVE_BIO_SET_CALLBACK_EX
+ 	size_t ATTR_UNUSED(len),
+@@ -3193,7 +3193,7 @@
+ #endif
+ 	BIO_set_callback_arg(SSL_get_wbio(ssl), (char*)c->ev->ev);
+ }
+-#endif
++#endif /* USE_WINSOCK && HAVE_SSL */
+ 
+ #ifdef HAVE_NGHTTP2
+ /** Create http2 session server.  Per connection, after TCP accepted.*/
+@@ -3389,7 +3389,7 @@
+ 			return;
+ 		}
+ 		c_hdl->ssl_shake_state = comm_ssl_shake_read;
+-#ifdef USE_WINSOCK
++#if defined(USE_WINSOCK) && defined(HAVE_SSL)
+ 		comm_point_tcp_win_bio_cb(c_hdl, c_hdl->ssl);
+ #endif
+ 	}
+--- a/util/netevent.h
++++ b/util/netevent.h
+@@ -1192,7 +1192,7 @@
+  */
+ void comm_base_handle_slow_accept(int fd, short event, void* arg);
+ 
+-#ifdef USE_WINSOCK
++#if defined(USE_WINSOCK) && defined(HAVE_SSL)
+ /**
+  * Callback for openssl BIO to on windows detect WSAEWOULDBLOCK and notify
+  * the winsock_event of this for proper TCP nonblocking implementation.
+--- a/services/outside_network.c
++++ b/services/outside_network.c
+@@ -759,7 +759,7 @@
+ 		}
+ 		verbose(VERB_ALGO, "the query is using TLS encryption, for %s",
+ 			(w->tls_auth_name?w->tls_auth_name:"an unauthenticated connection"));
+-#ifdef USE_WINSOCK
++#if defined(USE_WINSOCK) && defined(HAVE_SSL)
+ 		comm_point_tcp_win_bio_cb(pend->c, pend->c->ssl);
+ #endif
+ 		pend->c->ssl_shake_state = comm_ssl_shake_write;
+@@ -3770,7 +3770,7 @@
+ 		log_err("cannot create SSL object");
+ 		return 0;
+ 	}
+-#ifdef USE_WINSOCK
++#if defined(USE_WINSOCK) && defined(HAVE_SSL)
+ 	comm_point_tcp_win_bio_cb(cp, cp->ssl);
+ #endif
+ 	cp->ssl_shake_state = comm_ssl_shake_write;

@@ -118,8 +118,10 @@ endif()
 
 # These are needed by virtually all libicu usage:
 sessiondep_static_target(sessiondep_icudata icu-io libicudata.a)
-sessiondep_static_target(sessiondep_icuuc icu-io libicuuc.a)
-sessiondep_static_target(sessiondep_icui18n icu-io libicui18n.a sessiondep_icudata sessiondep_icuuc)
+# icuuc's data loader references the data library, so it has to precede it on the link line or a
+# single-pass linker never goes back for it; saying so here is what orders them.
+sessiondep_static_target(sessiondep_icuuc icu-io libicuuc.a sessiondep_icudata)
+sessiondep_static_target(sessiondep_icui18n icu-io libicui18n.a sessiondep_icuuc)
 sessiondep_static_target(sessiondep_icuio icu-io libicuio.a sessiondep_icui18n)
 
 # There are also libicutu.a (tools) and libicutest.a (test suite), which still get built because of

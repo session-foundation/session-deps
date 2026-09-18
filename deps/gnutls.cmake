@@ -39,6 +39,16 @@ sessiondep_build_external(gnutls
 sessiondep_static_simple(gnutls
     sessiondep::hogweed sessiondep::nettle sessiondep::libidn2 sessiondep::libtasn1)
 
+if(ANDROID AND CMAKE_SYSTEM_VERSION VERSION_LESS 29)
+    # gnutls is the only dependency here with thread-locals, and bionic has no __tls_get_addr below
+    # API 29: the toolchain is supposed to use emulated TLS instead, and does -- but only when it
+    # compiles.  Under LTO the model is chosen during codegen at the *link*, from that command's
+    # options, because the choice is a target option that the bitcode does not record.  So it has to
+    # be named on the link line, and carrying it on this target is how it reaches one.
+    set_property(TARGET sessiondep_ext_gnutls APPEND PROPERTY
+        INTERFACE_LINK_OPTIONS -femulated-tls)
+endif()
+
 sessiondep_override_find_package(
     GnuTLS
     ${GNUTLS_VERSION}

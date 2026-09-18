@@ -83,14 +83,13 @@ local mac_pipeline(name,
 
 // The Android NDK ships the toolchain file; the image has the NDK at this path.
 local android_ndk = '/usr/lib/android-ndk';
-local android_pipeline(abi, jobs=6, lto=true) = linux_pipeline(
+local android_pipeline(abi, jobs=6) = linux_pipeline(
   'Android (' + abi + ')',
   docker_base + 'android',
   jobs=jobs,
   cmake_extra='-DCMAKE_TOOLCHAIN_FILE=' + android_ndk + '/build/cmake/android.toolchain.cmake '
               + '-DANDROID_ABI=' + abi + ' -DANDROID_ARM_MODE=arm -DANDROID_PLATFORM=android-23 '
-              + '-DANDROID_STL=c++_static '
-              + (if lto then '' else '-DSESSIONDEPS_LTO=OFF '),
+              + '-DANDROID_STL=c++_static ',
   run_test='',
 );
 
@@ -128,14 +127,7 @@ local ios_pipeline(name, platform, jobs=6, allow_fail=false) = mac_pipeline(
   // The two ABIs Session ships, plus x86_64 for the emulator most Android development runs on.  x86
   // can be added here if it is ever worth the build time.
   android_pipeline('arm64-v8a'),
-  // lto=false: this one otherwise fails to link deps-test with an undefined __tls_get_addr,
-  // referenced from gnutls's thread-locals during LTO codegen.  bionic has no such symbol below API
-  // 29 -- the toolchain is meant to use emulated TLS there, which it demonstrably does when it
-  // compiles without LTO, and the other two ABIs survive it either way.  Why the LTO path does not
-  // is unexplained, so this is a workaround: it keeps codegen in the compile step, where the right
-  // choice is made.  It stays a property of this job rather than a default in StaticBuild.cmake so
-  // that a project using some subset of these dependencies can decide for itself.
-  android_pipeline('armeabi-v7a', lto=false),
+  android_pipeline('armeabi-v7a'),
   android_pipeline('x86_64'),
 
   ios_pipeline('iOS (device)', 'OS64'),

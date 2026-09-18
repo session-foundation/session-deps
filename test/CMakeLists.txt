@@ -58,16 +58,6 @@ target_compile_definitions(deps-test PRIVATE ${dep_defines})
 # The rest of our code is C++20, so that is what these headers need to be usable from.
 target_compile_features(deps-test PRIVATE cxx_std_20)
 
-if(SESSIONDEPS_LTO)
-    # With LTO the dependency archives hold bitcode rather than machine code, so the final link is
-    # where they get compiled.  That link has to be told it is doing LTO: without -flto the driver
-    # passes the linker none of the -plugin-opt settings that describe the target, and lld -- which
-    # runs LTO anyway, having noticed the bitcode -- codegens every dependency from its own defaults
-    # instead of the ones they were built for.  Anything consuming these archives owes them the same.
-    target_compile_options(deps-test PRIVATE -flto)
-    target_link_options(deps-test PRIVATE -flto)
-endif()
-
 if(MINGW)
     # mingw links its own runtime as DLLs by default, which a cross-built binary then cannot find:
     # they live in the cross toolchain's directories, not next to the executable.  Statically linking

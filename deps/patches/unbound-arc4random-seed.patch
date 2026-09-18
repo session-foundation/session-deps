@@ -1,0 +1,50 @@
+The nettle backend of util/random.c seeds yarrow from getentropy(3), which is
+not usable on Apple platforms or on Android:
+
+    util/random.c: error: call to undeclared function 'getentropy'
+    util/random.c: fatal error: 'sys/random.h' file not found
+
+Darwin declares getentropy in <sys/random.h> rather than <unistd.h>, and
+unbound declares it itself only where it also supplies an implementation --
+which excludes both of these, because both have arc4random.  <sys/random.h>
+in turn ships only in the macOS SDK: it is in neither the iPhoneOS nor the
+iPhoneSimulator SDK, and Apple treats getentropy as private API outside
+macOS, so using it gets an app rejected from the App Store however the
+declaration is obtained.  Android's bionic declares it only from API level
+28, so anything targeting older devices cannot see it either.
+
+arc4random_buf(3) is public API on both, present far below any API level
+worth targeting (21 on Android), drawn from the same system entropy, and
+cannot fail -- so the error branch goes with it.  unbound already seeds
+itself this way in its non-nettle configurations, and its own compat
+arc4random is built where the platform lacks one.
+
+The combination is untested upstream: an openssl or libbsd build takes the
+arc4random branch of this file and never reaches the nettle one.
+
+--- a/util/random.c
++++ b/util/random.c
+@@ -189,6 +189,15 @@
+ 	/* Setup Yarrow context */
+ 	yarrow256_init(&s->ctx, 0, NULL);
+ 
++#if defined(__APPLE__) || defined(__ANDROID__)
++	/* getentropy(3) is not usable on either: Darwin declares it in <sys/random.h>, which ships
++	 * only in the macOS SDK, and treats the call as private API elsewhere; bionic declares it
++	 * only from API level 28.  arc4random_buf(3) is public on both, available for every API
++	 * level we build against, drawn from the same entropy, and cannot fail. */
++	arc4random_buf(buf, sizeof(buf));
++	yarrow256_seed(&s->ctx, YARROW256_SEED_FILE_SIZE, buf);
++	s->seeded = yarrow256_is_seeded(&s->ctx);
++#else
+ 	if(getentropy(buf, sizeof(buf)) != -1) {
+ 		/* got entropy */
+ 		yarrow256_seed(&s->ctx, YARROW256_SEED_FILE_SIZE, buf);
+@@ -199,6 +208,7 @@
+ 		free(s);
+ 		return NULL;
+ 	}
++#endif
+ 
+ 	return s;
+ }

@@ -1,0 +1,69 @@
+mh-mingw/mh-mingw64 name the libraries for MSVC compatibility rather than the
+way every other platform does: libicudt.a and libicuin.a instead of
+libicudata.a and libicui18n.a (the stubnames exist "so that poorly working FAT
+disks and installation programs can work"), no "lib" prefix, and DLLs
+installed into bin/ rather than lib/.
+
+None of that describes a static build, which installs no DLLs at all, so this
+applies the normal names when ENABLE_SHARED is off.
+
+Beyond the gratuitous difference, the short names are actively broken for a
+cross build.  pkgdata composes the static data library's name itself, taking
+the "lib" from LIBPREFIX -- which mh-mingw64 leaves empty -- and falling back
+to a MinGW branch that hardcodes "lib" for a name containing "icudt".  That
+branch is selected by `#if U_PLATFORM == U_PF_MINGW`, i.e. by the platform
+pkgdata was *compiled* for, and in a cross build the pkgdata that runs is the
+one from --with-cross-build, compiled for the build machine.  So it never
+fires, and 33MB of locale data is written as icudt.a, which no install rule
+looks for; MINGW_MOVEDLLSTOBINDIR then puts it in bin/ as though it were a
+DLL.  What lands in lib/libicudt.a is the 736-byte placeholder from stubdata/,
+so anything linking it gets a library with no data in it at all.
+
+--- a/source/config/mh-mingw
++++ b/source/config/mh-mingw
+@@ -99,6 +99,21 @@
+ I18N_STUBNAME = in
+ LIBICU = $(STATIC_PREFIX_WHEN_USED)$(ICUPREFIX)
+ 
++# A static build produces no DLLs, so none of the naming above applies to anything it installs.
++# Use the same names as every other platform instead, so that consumers need no Windows special
++# case.  LIBPREFIX in particular has to be set rather than spelled out in LIBSICU, because pkgdata
++# composes the data library name from it, and the MinGW branch that would otherwise supply the
++# missing "lib" is chosen by the platform pkgdata was *compiled* for -- which in a cross build is
++# the build machine, so it never triggers and the data library is installed as icudt.a.
++ifneq ($(ENABLE_SHARED),YES)
++LIBPREFIX = lib
++LIBSICU = $(LIBPREFIX)$(STATIC_PREFIX)$(ICUPREFIX)
++LIBICU = $(LIBPREFIX)$(ICUPREFIX)
++DATA_STUBNAME = data
++I18N_STUBNAME = i18n
++MINGW_MOVEDLLSTOBINDIR = NO
++endif
++
+ #SH### copied from Makefile.inc
+ #SH## for icu-config to test with
+ #SH#ICULIBS_COMMON_LIB_NAME="${LIBICU}${COMMON_STUBNAME}${ICULIBSUFFIX}${ICULIBSUFFIX_VERSION}.${SO}"
+--- a/source/config/mh-mingw64
++++ b/source/config/mh-mingw64
+@@ -99,6 +99,21 @@
+ I18N_STUBNAME = in
+ LIBICU = $(STATIC_PREFIX_WHEN_USED)$(ICUPREFIX)
+ 
++# A static build produces no DLLs, so none of the naming above applies to anything it installs.
++# Use the same names as every other platform instead, so that consumers need no Windows special
++# case.  LIBPREFIX in particular has to be set rather than spelled out in LIBSICU, because pkgdata
++# composes the data library name from it, and the MinGW branch that would otherwise supply the
++# missing "lib" is chosen by the platform pkgdata was *compiled* for -- which in a cross build is
++# the build machine, so it never triggers and the data library is installed as icudt.a.
++ifneq ($(ENABLE_SHARED),YES)
++LIBPREFIX = lib
++LIBSICU = $(LIBPREFIX)$(STATIC_PREFIX)$(ICUPREFIX)
++LIBICU = $(LIBPREFIX)$(ICUPREFIX)
++DATA_STUBNAME = data
++I18N_STUBNAME = i18n
++MINGW_MOVEDLLSTOBINDIR = NO
++endif
++
+ #SH### copied from Makefile.inc
+ #SH## for icu-config to test with
+ #SH#ICULIBS_COMMON_LIB_NAME="${LIBICU}${COMMON_STUBNAME}${ICULIBSUFFIX}${ICULIBSUFFIX_VERSION}.${SO}"

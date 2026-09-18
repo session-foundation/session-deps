@@ -93,18 +93,15 @@ local android_pipeline(abi, jobs=6) = linux_pipeline(
   run_test='',
 );
 
-// leetal/ios-cmake is what the other Session projects cross-compile for iOS with; pinned because a
-// toolchain file that moves under us is a build that breaks for no reason we changed.
-local ios_cmake_tag = '4.6.0';
 local ios_pipeline(name, platform, jobs=6, allow_fail=false) = mac_pipeline(
   name,
   arch='arm64',
   jobs=jobs,
-  setup=[
-    'git clone --depth=1 -b ' + ios_cmake_tag + ' https://github.com/leetal/ios-cmake ios-cmake',
-  ],
-  cmake_extra='-DCMAKE_TOOLCHAIN_FILE=../ios-cmake/ios.toolchain.cmake -DPLATFORM=' + platform
-              + ' -DDEPLOYMENT_TARGET=13 -DENABLE_BITCODE=OFF ',
+  // Not --depth=1: the submodule is pinned to a commit that is not its branch tip, which a shallow
+  // fetch can only retrieve if the server happens to allow fetching arbitrary revisions.
+  setup=['git submodule update --init --recursive'],
+  cmake_extra='-DCMAKE_TOOLCHAIN_FILE=../external/ios-cmake/ios.toolchain.cmake -DPLATFORM='
+              + platform + ' -DDEPLOYMENT_TARGET=13 -DENABLE_BITCODE=OFF ',
   run_test='',
   allow_fail=allow_fail,
 );

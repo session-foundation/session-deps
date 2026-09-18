@@ -1,5 +1,5 @@
---- configure	2024-01-16 20:17:02
-+++ patch-configure.sh	2025-03-26 08:23:34
+--- a/configure	2024-01-16 20:17:02
++++ b/configure	2025-03-26 08:23:34
 @@ -63130,19 +63130,19 @@
  
    fi
@@ -31,8 +31,8 @@
  
       if test $HAVE_TIMEZONE_T = 0; then
 
---- src/gl/time.in.h	2025-02-08 15:53:58
-+++ src/gl/patch-time.in.h	2025-04-14 15:15:15
+--- a/src/gl/time.in.h	2025-02-08 15:53:58
++++ b/src/gl/time.in.h	2025-04-14 15:15:15
 @@ -494,11 +494,11 @@
     Inspired by NetBSD.  */
  
@@ -126,8 +126,8 @@
  # endif
  
 
---- src/gl/parse-datetime.h	2025-02-08 15:53:58
-+++ src/gl/patch-parse-datetime.h	2025-04-14 15:06:19
+--- a/src/gl/parse-datetime.h	2025-02-08 15:53:58
++++ b/src/gl/parse-datetime.h	2025-04-14 15:06:19
 @@ -32,7 +32,7 @@
  /* same as above, supporting additional flags */
  bool parse_datetime2 (struct timespec *restrict,
@@ -138,8 +138,8 @@
  
  #ifdef __cplusplus
 
---- src/gl/parse-datetime.c	2025-02-08 15:56:00
-+++ src/gl/patch-parse-datetime.c	2025-04-14 15:07:24
+--- a/src/gl/parse-datetime.c	2025-02-08 15:56:00
++++ b/src/gl/parse-datetime.c	2025-04-14 15:07:24
 @@ -3368,7 +3368,7 @@
  static bool
  parse_datetime_body (struct timespec *result, char const *p,
@@ -195,8 +195,8 @@
      return false;
    bool ok = parse_datetime_body (result, p, now, 0, tz, tzstring);
 
---- src/gl/parse-datetime.y	2025-02-08 15:53:58
-+++ src/gl/patch-parse-datetime.y	2025-04-14 15:08:00
+--- a/src/gl/parse-datetime.y	2025-02-08 15:53:58
++++ b/src/gl/parse-datetime.y	2025-04-14 15:08:00
 @@ -1746,7 +1746,7 @@
  static bool
  parse_datetime_body (struct timespec *result, char const *p,
@@ -252,8 +252,8 @@
      return false;
    bool ok = parse_datetime_body (result, p, now, 0, tz, tzstring);
 
---- src/gl/time_rz.c	2025-02-08 15:53:58
-+++ src/gl/patch-time_rz.c	2025-04-14 15:09:02
+--- a/src/gl/time_rz.c	2025-02-08 15:53:58
++++ b/src/gl/time_rz.c	2025-04-14 15:09:02
 @@ -19,7 +19,7 @@
  
  /* Although this module is not thread-safe, any races should be fairly
@@ -397,8 +397,8 @@
          {
            struct tm tm_1;
 
---- src/gl/time-internal.h	2025-02-08 15:53:58
-+++ src/gl/patch-time-internal.h	2025-04-14 15:19:18
+--- a/src/gl/time-internal.h	2025-02-08 15:53:58
++++ b/src/gl/time-internal.h	2025-04-14 15:19:18
 @@ -45,10 +45,10 @@
    char abbrs[FLEXIBLE_ARRAY_MEMBER];
  };

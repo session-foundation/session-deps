@@ -389,8 +389,27 @@ endfunction()
 # (from the variables set above).  The following options are supported and passed through to
 # ExternalProject_Add if specified.  If omitted, these defaults are used:
 function(sessiondep_build_external target)
-    set(options DEPENDS PATCH_COMMAND CONFIGURE_COMMAND BUILD_COMMAND INSTALL_COMMAND BUILD_BYPRODUCTS)
+    set(options DEPENDS PATCHES PATCH_COMMAND CONFIGURE_COMMAND BUILD_COMMAND INSTALL_COMMAND BUILD_BYPRODUCTS)
     cmake_parse_arguments(PARSE_ARGV 1 arg "" "" "${options}")
+
+    # PATCHES takes bare file names in patches/ and expands to the patch invocations; every patch is
+    # applied with -p1, so a patch taken from somewhere that strips differently needs its paths
+    # adjusted (a/ and b/ prefixes) rather than a different strip level here.
+    if(arg_PATCHES)
+        if(arg_PATCH_COMMAND)
+            message(FATAL_ERROR "sessiondep_build_external(${target}): PATCHES and PATCH_COMMAND are mutually exclusive")
+        endif()
+        foreach(patch IN LISTS arg_PATCHES)
+            set(patch_path "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/patches/${patch}")
+            if(NOT EXISTS "${patch_path}")
+                message(FATAL_ERROR "sessiondep_build_external(${target}): no such patch: ${patch_path}")
+            endif()
+            if(arg_PATCH_COMMAND)
+                list(APPEND arg_PATCH_COMMAND COMMAND)
+            endif()
+            list(APPEND arg_PATCH_COMMAND ${sessiondeps_patch} -p1 -i "${patch_path}")
+        endforeach()
+    endif()
 
     set(build_def_DEPENDS "")
     set(build_def_PATCH_COMMAND "")

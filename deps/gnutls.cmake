@@ -12,7 +12,7 @@ session_dep(libtasn1 4.16)
 # The Android NDK defines `timezone_t` but not a number of related types and GnuTLS assumes if `timezone_t` is defined then all the others will be defined as well (resulting in build errors), so we need to patch GnuTLS to think `HAVE_TIMEZONE_T` is not defined and rename it's internal `timezone_t` so there isn't a name collision
 set(gnutls_patch_commands "")
 if(ANDROID)
-    set(gnutls_patch_commands PATCH_COMMAND ${sessiondeps_patch} -p0 -i ${CMAKE_CURRENT_LIST_DIR}/patches/gnutls-android-timezone-t.patch)
+    set(gnutls_patch_commands PATCHES gnutls-android-timezone-t.patch)
 endif()
 
 sessiondep_build_external(gnutls

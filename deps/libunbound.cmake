@@ -8,9 +8,7 @@ session_dep(nettle 3.6 WITH hogweed)
 session_dep(expat 2)
 
 sessiondep_build_external(libunbound
-    PATCH_COMMAND ${sessiondeps_patch} -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/unbound-nettle4.patch
-    COMMAND ${sessiondeps_patch} -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/unbound-macos-getentropy.patch
-    COMMAND ${sessiondeps_patch} -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/unbound-windows-without-ssl.patch
+    PATCHES unbound-nettle4.patch unbound-macos-getentropy.patch unbound-windows-without-ssl.patch
     CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} ${sessiondeps_cross_rc} --prefix=${SESSIONDEPS_DESTDIR}
     --with-libunbound-only --disable-shared --enable-static
     --with-pic --$<IF:$<BOOL:${SESSIONDEPS_LTO}>,enable,disable>-flto

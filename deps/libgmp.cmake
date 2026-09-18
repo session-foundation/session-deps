@@ -6,9 +6,7 @@ set(LIBGMP_HASH SHA512=e85a0dab5195889948a3462189f0e0598d331d3457612e2d3350799db
 
 sessiondep_build_external(libgmp
     # These two patches are applied to gmplib upstream (and come via the Debian package):
-    PATCH_COMMAND
-        ${sessiondeps_patch} -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/gmplib-fix-acinclude-m4-for-gcc-15.patch &&
-        ${sessiondeps_patch} -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/gmplib-trust-vsprintf-return.patch
+    PATCHES gmplib-fix-acinclude-m4-for-gcc-15.patch gmplib-trust-vsprintf-return.patch
     CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} --disable-shared --prefix=${SESSIONDEPS_DESTDIR} --with-pic
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
         "CFLAGS=${sessiondeps_CFLAGS}" "CXXFLAGS=${sessiondeps_CXXFLAGS}"

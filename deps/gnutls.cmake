@@ -15,18 +15,6 @@ if(ANDROID)
     set(gnutls_patch_commands PATCHES gnutls-android-timezone-t.patch)
 endif()
 
-# gnutls is the only dependency here with thread-locals, and bionic has no __tls_get_addr below API
-# 29: the toolchain uses emulated TLS instead, and picks that during codegen.  Under LTO codegen
-# happens at the link rather than here, and there it does not pick it -- armeabi-v7a then fails to
-# link with an undefined __tls_get_addr, while the other ABIs get away with it because lld can
-# rewrite the access when producing an executable.  Passing -femulated-tls to the link does not help
-# (the flag reaches the plugin and is ignored), so build this one dependency without LTO, which puts
-# codegen back here, where the toolchain demonstrably gets it right.
-set(gnutls_android_tls_cflags)
-if(ANDROID AND CMAKE_SYSTEM_VERSION VERSION_LESS 29)
-    set(gnutls_android_tls_cflags " -fno-lto")
-endif()
-
 sessiondep_build_external(gnutls
     ${gnutls_patch_commands}
     CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} --disable-shared --prefix=${SESSIONDEPS_DESTDIR} --with-pic
@@ -36,7 +24,7 @@ sessiondep_build_external(gnutls
         "PKG_CONFIG_LIBDIR=${SESSIONDEPS_DESTDIR}/lib/pkgconfig" "PKG_CONFIG=pkg-config"
         "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include" "LDFLAGS=${sessiondeps_ldflags}"
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
-        "CFLAGS=${sessiondeps_CFLAGS}${gnutls_android_tls_cflags}"
+        "CFLAGS=${sessiondeps_CFLAGS}"
         "CXXFLAGS=${sessiondeps_CXXFLAGS}"
         ${sessiondeps_cross_rc}
     DEPENDS sessiondep::nettle sessiondep::hogweed sessiondep::libidn2 sessiondep::libtasn1

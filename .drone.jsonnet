@@ -20,12 +20,15 @@ local local_mirror = ' -DLOCAL_MIRROR=https://oxen.rocks/deps ';
 local build_tools = 'build-essential cmake git pkg-config ccache ca-certificates automake autoconf '
                     + 'libtool patch file xz-utils unzip python3';
 
-local build_commands(jobs, cmake_extra='') = [
+// Running deps-test is the point of it: building only proves the recipes compiled, while the run
+// calls into every library and is what catches one that links but does not work.
+local build_commands(jobs, cmake_extra='', run_test='./deps-test') = [
   'mkdir build',
   'cd build',
   'cmake ../test -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_COLOR_DIAGNOSTICS=ON '
   + cmake_extra + local_mirror,
   'ninja -j' + jobs + ' -v',
+  run_test,
 ];
 
 local linux_pipeline(name,
@@ -34,6 +37,7 @@ local linux_pipeline(name,
                      extra_pkgs='',
                      cmake_extra='',
                      jobs=6,
+                     run_test='./deps-test',
                      allow_fail=false) = {
   kind: 'pipeline',
   type: 'docker',
@@ -51,7 +55,7 @@ local linux_pipeline(name,
       apt_get_quiet + ' install -y eatmydata',
       'eatmydata ' + apt_get_quiet + ' install --no-install-recommends -y ninja-build '
       + build_tools + ' ' + extra_pkgs,
-    ] + build_commands(jobs, cmake_extra),
+    ] + build_commands(jobs, cmake_extra, run_test),
   }],
 };
 
@@ -79,10 +83,12 @@ local mac_pipeline(name, arch='amd64', jobs=6, allow_fail=false) = {
   // armhf is built on an arm64 machine, as the 32-bit runners are.
   linux_pipeline('Debian trixie (armhf)', docker_base + 'debian-trixie/arm32v7', arch='arm64', jobs=4),
 
+  // The test binary is built static, so wine can run it without the cross toolchain's DLLs.
   linux_pipeline('Windows x64 (mingw)',
                  docker_base + 'debian-sid',
-                 extra_pkgs='g++-mingw-w64-x86-64-posix',
-                 cmake_extra='-DCMAKE_TOOLCHAIN_FILE=../test/cross/mingw-x64.cmake '),
+                 extra_pkgs='g++-mingw-w64-x86-64-posix wine',
+                 cmake_extra='-DCMAKE_TOOLCHAIN_FILE=../test/cross/mingw-x64.cmake ',
+                 run_test='WINEDEBUG=-all wine ./deps-test.exe'),
 
   mac_pipeline('macOS (ARM)', arch='arm64'),
   mac_pipeline('macOS (Intel)'),

@@ -57,3 +57,10 @@ target_link_libraries(deps-test PRIVATE ${dep_targets})
 target_compile_definitions(deps-test PRIVATE ${dep_defines})
 # The rest of our code is C++20, so that is what these headers need to be usable from.
 target_compile_features(deps-test PRIVATE cxx_std_20)
+
+if(MINGW)
+    # mingw links its own runtime as DLLs by default, which a cross-built binary then cannot find:
+    # they live in the cross toolchain's directories, not next to the executable.  Statically linking
+    # them makes this runnable (under wine, or on Windows) without arranging a DLL search path.
+    target_link_options(deps-test PRIVATE -static)
+endif()

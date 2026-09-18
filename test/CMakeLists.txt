@@ -22,6 +22,7 @@ set(SKIP_DEPS "" CACHE STRING "Dependency recipes to skip, e.g. -DSKIP_DEPS='lib
 file(GLOB dep_recipes RELATIVE ${CMAKE_CURRENT_LIST_DIR}/../deps ${CMAKE_CURRENT_LIST_DIR}/../deps/*.cmake)
 
 set(dep_targets)
+set(dep_defines)
 foreach(recipe IN LISTS dep_recipes)
     string(REGEX REPLACE "\\.cmake$" "" dep "${recipe}")
 
@@ -38,13 +39,21 @@ foreach(recipe IN LISTS dep_recipes)
     # would ask for is irrelevant here -- we want to build the recipe whatever it produces.
     session_dep(${dep} 0)
     list(APPEND dep_targets sessiondep::${dep})
+
+    string(TOUPPER "${dep}" dep_define)
+    string(MAKE_C_IDENTIFIER "${dep_define}" dep_define)
+    list(APPEND dep_defines HAVE_DEP_${dep_define})
 endforeach()
 
 list(LENGTH dep_targets dep_count)
 message(STATUS "session-deps test: building ${dep_count} dependencies")
 
-# Linking against all of them checks that the targets and the link flags they carry are coherent,
-# which building alone does not.  It does not check that their symbols resolve: nothing here
-# references them, so a static archive contributes no members.
-add_executable(deps-test main.c)
+# The sources call into each library that was built, which is what makes the linker resolve
+# anything at all: a static archive nothing references contributes no members, so linking by itself
+# would be satisfied by a library whose symbols are missing entirely.  HAVE_DEP_* tells them which
+# libraries are present, so SKIP_DEPS drops the calls along with the library.
+add_executable(deps-test main.cpp)
 target_link_libraries(deps-test PRIVATE ${dep_targets})
+target_compile_definitions(deps-test PRIVATE ${dep_defines})
+# The rest of our code is C++20, so that is what these headers need to be usable from.
+target_compile_features(deps-test PRIVATE cxx_std_20)

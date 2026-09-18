@@ -1,0 +1,47 @@
+The nettle backend of util/random.c seeds yarrow from getentropy(3), which
+does not work on Apple platforms:
+
+    util/random.c:192:5: error: call to undeclared function 'getentropy'
+    util/random.c:76:10: fatal error: 'sys/random.h' file not found
+
+Darwin declares getentropy in <sys/random.h> rather than <unistd.h>, and
+unbound declares it itself only where it also supplies an implementation --
+which excludes Darwin, because it has arc4random.  <sys/random.h> in turn
+ships only in the macOS SDK: it is in neither the iPhoneOS nor the
+iPhoneSimulator SDK, and Apple treats getentropy as private API outside
+macOS, so using it gets an app rejected from the App Store however the
+declaration is obtained.
+
+arc4random_buf(3) is public API on every Apple platform, declared in
+<stdlib.h> (which config.h already includes), drawn from the same system
+entropy, and cannot fail -- so the error branch goes with it.  unbound
+already seeds itself this way in its non-nettle configurations.
+
+The combination is untested upstream: an openssl or libbsd build takes the
+arc4random branch of this file and never reaches the nettle one.
+
+--- a/util/random.c
++++ b/util/random.c
+@@ -189,6 +189,14 @@
+ 	/* Setup Yarrow context */
+ 	yarrow256_init(&s->ctx, 0, NULL);
+ 
++#ifdef __APPLE__
++	/* Darwin declares getentropy(3) in <sys/random.h>, which ships only in the macOS SDK, and
++	 * Apple treats the call itself as private API on its other platforms.  arc4random_buf(3) is
++	 * public everywhere, cannot fail, and is seeded from the same source. */
++	arc4random_buf(buf, sizeof(buf));
++	yarrow256_seed(&s->ctx, YARROW256_SEED_FILE_SIZE, buf);
++	s->seeded = yarrow256_is_seeded(&s->ctx);
++#else
+ 	if(getentropy(buf, sizeof(buf)) != -1) {
+ 		/* got entropy */
+ 		yarrow256_seed(&s->ctx, YARROW256_SEED_FILE_SIZE, buf);
+@@ -199,6 +207,7 @@
+ 		free(s);
+ 		return NULL;
+ 	}
++#endif
+ 
+ 	return s;
+ }

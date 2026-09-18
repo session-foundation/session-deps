@@ -21,15 +21,15 @@ local build_tools = 'build-essential cmake git pkg-config ccache ca-certificates
                     + 'libtool patch file xz-utils unzip python3';
 
 // Running deps-test is the point of it: building only proves the recipes compiled, while the run
-// calls into every library and is what catches one that links but does not work.
+// calls into every library and is what catches one that links but does not work.  A cross build
+// that the CI machine cannot execute passes run_test='' and gets the build only.
 local build_commands(jobs, cmake_extra='', run_test='./deps-test') = [
   'mkdir build',
   'cd build',
   'cmake ../test -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_COLOR_DIAGNOSTICS=ON '
   + cmake_extra + local_mirror,
   'ninja -j' + jobs + ' -v',
-  run_test,
-];
+] + (if run_test == '' then [] else [run_test]);
 
 local linux_pipeline(name,
                      image,
@@ -59,7 +59,13 @@ local linux_pipeline(name,
   }],
 };
 
-local mac_pipeline(name, arch='amd64', jobs=6, allow_fail=false) = {
+local mac_pipeline(name,
+                   arch='amd64',
+                   jobs=6,
+                   setup=[],
+                   cmake_extra='',
+                   run_test='./deps-test',
+                   allow_fail=false) = {
   kind: 'pipeline',
   type: 'exec',
   name: name,
@@ -71,9 +77,37 @@ local mac_pipeline(name, arch='amd64', jobs=6, allow_fail=false) = {
       'echo "Building on ${DRONE_STAGE_MACHINE}"',
       // Without this the C compiler has no include path containing basic system headers.
       'export SDKROOT="$(xcrun --sdk macosx --show-sdk-path)"',
-    ] + build_commands(jobs),
+    ] + setup + build_commands(jobs, cmake_extra, run_test),
   }],
 };
+
+// The Android NDK ships the toolchain file; the image has the NDK at this path.
+local android_ndk = '/usr/lib/android-ndk';
+local android_pipeline(abi, jobs=6) = linux_pipeline(
+  'Android (' + abi + ')',
+  docker_base + 'android',
+  jobs=jobs,
+  cmake_extra='-DCMAKE_TOOLCHAIN_FILE=' + android_ndk + '/build/cmake/android.toolchain.cmake '
+              + '-DANDROID_ABI=' + abi + ' -DANDROID_ARM_MODE=arm -DANDROID_PLATFORM=android-23 '
+              + '-DANDROID_STL=c++_static ',
+  run_test='',
+);
+
+// leetal/ios-cmake is what the other Session projects cross-compile for iOS with; pinned because a
+// toolchain file that moves under us is a build that breaks for no reason we changed.
+local ios_cmake_tag = '4.6.0';
+local ios_pipeline(name, platform, jobs=6, allow_fail=false) = mac_pipeline(
+  name,
+  arch='arm64',
+  jobs=jobs,
+  setup=[
+    'git clone --depth=1 -b ' + ios_cmake_tag + ' https://github.com/leetal/ios-cmake ios-cmake',
+  ],
+  cmake_extra='-DCMAKE_TOOLCHAIN_FILE=../ios-cmake/ios.toolchain.cmake -DPLATFORM=' + platform
+              + ' -DDEPLOYMENT_TARGET=13 -DENABLE_BITCODE=OFF ',
+  run_test='',
+  allow_fail=allow_fail,
+);
 
 [
   linux_pipeline('Debian sid (amd64)', docker_base + 'debian-sid'),
@@ -92,4 +126,13 @@ local mac_pipeline(name, arch='amd64', jobs=6, allow_fail=false) = {
 
   mac_pipeline('macOS (ARM)', arch='arm64'),
   mac_pipeline('macOS (Intel)'),
+
+  // The two ABIs Session ships, plus x86_64 for the emulator most Android development runs on.  x86
+  // can be added here if it is ever worth the build time.
+  android_pipeline('arm64-v8a'),
+  android_pipeline('armeabi-v7a'),
+  android_pipeline('x86_64'),
+
+  ios_pipeline('iOS (device)', 'OS64'),
+  ios_pipeline('iOS (simulator)', 'SIMULATORARM64'),
 ]

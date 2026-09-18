@@ -18,7 +18,7 @@ sessiondep_build_external(libzmq
 
 set(extra_deps)
 if(WIN32)
-    set(extra_deps iphlpapi)
+    set(extra_deps ws2_32 iphlpapi)
 endif()
 sessiondep_static_simple(libzmq sessiondep::libsodium ${extra_deps})
 target_compile_definitions(sessiondep_ext_libzmq INTERFACE ZMQ_STATIC)

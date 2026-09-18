@@ -39,6 +39,16 @@ sessiondep_build_external(gnutls
 sessiondep_static_simple(gnutls
     sessiondep::hogweed sessiondep::nettle sessiondep::libidn2 sessiondep::libtasn1)
 
+if(ANDROID AND SESSIONDEPS_LTO AND CMAKE_SYSTEM_VERSION VERSION_LESS 29)
+    # Built with LTO this archive holds bitcode, so whoever links it is what compiles it -- and a
+    # link without -flto tells the driver nothing is being compiled, so it forwards none of the
+    # -plugin-opt settings describing the target.  lld runs LTO anyway, having found the bitcode,
+    # and uses its own defaults: for gnutls's thread-locals that means real ELF TLS, which bionic
+    # has no __tls_get_addr for below API 29.  Nothing else here has thread-locals, so gnutls is
+    # where the requirement is real enough to hand to whoever links it.
+    set_property(TARGET sessiondep_ext_gnutls APPEND PROPERTY INTERFACE_LINK_OPTIONS -flto)
+endif()
+
 
 sessiondep_override_find_package(
     GnuTLS

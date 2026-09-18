@@ -13,6 +13,15 @@ session_dep(gnutls 3.6)
 sessiondep_link_flags(mhd_tls_libs sessiondep::gnutls)
 list(JOIN mhd_tls_libs " " mhd_tls_libs)
 
+# gnutls.h marks its exported data __declspec(dllimport) on Windows unless GNUTLS_INTERNAL_BUILD is
+# defined, so code compiled against it looks for __imp_gnutls_malloc and friends -- which only a DLL
+# provides, and we build gnutls static.  gnutls offers no other switch for this; defining its
+# internal-build macro in a consumer is what MSYS2 does for the same reason (MINGW-packages#10464).
+set(mhd_gnutls_static_cppflags)
+if(WIN32)
+    set(mhd_gnutls_static_cppflags " -DGNUTLS_INTERNAL_BUILD")
+endif()
+
 # Only the core HTTP(S) server is built: the authentication, form post-processing, cookie and
 # HTTP-upgrade layers are optional features that nothing here uses, and each is request-parsing
 # surface that has had its own security fixes.
@@ -28,7 +37,8 @@ sessiondep_build_external(libmicrohttpd
     --disable-doc --disable-examples --disable-curl
     --disable-bauth --disable-dauth --disable-postprocessor --disable-httpupgrade --disable-cookie
     "PKG_CONFIG_PATH=${SESSIONDEPS_DESTDIR}/lib/pkgconfig" "PKG_CONFIG=pkg-config"
-    "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include" "LDFLAGS=${sessiondeps_ldflags}"
+    "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include${mhd_gnutls_static_cppflags}"
+    "LDFLAGS=${sessiondeps_ldflags}"
     "LIBS=${mhd_tls_libs}"
     "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
     "CFLAGS=${sessiondeps_CFLAGS}" "CXXFLAGS=${sessiondeps_CXXFLAGS}"

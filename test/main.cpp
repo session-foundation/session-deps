@@ -43,10 +43,6 @@
 #ifdef HAVE_DEP_LIBSODIUM
 #include <sodium.h>
 #endif
-#ifdef HAVE_DEP_LIBSSL
-#include <openssl/crypto.h>
-#include <openssl/ssl.h>
-#endif
 #ifdef HAVE_DEP_LIBTASN1
 #include <libtasn1.h>
 #endif
@@ -134,12 +130,6 @@ int main() {
         return 1;
     }
     std::printf("libsodium: %s\n", sodium_version_string());
-#endif
-#ifdef HAVE_DEP_LIBSSL
-    // OpenSSL_version is libcrypto and TLS_method is libssl: two archives, two calls.
-    std::printf("libssl: %s, TLS_method %s\n",
-                OpenSSL_version(OPENSSL_VERSION),
-                TLS_method() ? "ok" : "missing");
 #endif
 #ifdef HAVE_DEP_LIBTASN1
     std::printf("libtasn1: %s\n", asn1_check_version(nullptr));

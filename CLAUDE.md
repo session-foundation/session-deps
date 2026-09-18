@@ -122,10 +122,6 @@ a flag whose handling sits inside a conditional is accepted and ignored with no 
 (`--without-ssl` does nothing for unbound once `--with-nettle` is given).  Check that a flag reaches
 `config.h`/`configdata.pm` rather than assuming.
 
-**OpenSSL does not take `--host`.**  It picks its target from `POSIX::uname()` with no environment
-override, so a cross build must name the target (`./Configure mingw64`) and pass the cross `AR` and
-`RANLIB`; `SYSTEM=MINGW64` was an OpenSSL 1.x thing and has been inert since 3.0.
-
 **`deps/sqlite3.cmake` is an alias** that bundles `sqlite3mc`; there is no separate stock sqlite3
 build.
 

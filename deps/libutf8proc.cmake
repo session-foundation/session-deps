@@ -12,3 +12,6 @@ sessiondep_build_external(libutf8proc
 )
 
 sessiondep_static_simple(libutf8proc)
+# Without this its header declares everything __declspec(dllimport) on Windows, so callers look for
+# __imp_utf8proc_* and find the plain symbols the static library actually carries.
+target_compile_definitions(sessiondep_ext_libutf8proc INTERFACE UTF8PROC_STATIC)

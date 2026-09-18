@@ -43,8 +43,8 @@ endif()
 
 sessiondep_build_external(icu-io
     ${icu_native_dep}
-    PATCH_COMMAND patch -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/icu-mingw-static-libraries-without-s.patch
-    COMMAND patch -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/icu-mingw-static-library-names.patch
+    PATCH_COMMAND ${sessiondeps_patch} -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/icu-mingw-static-libraries-without-s.patch
+    COMMAND ${sessiondeps_patch} -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/icu-mingw-static-library-names.patch
     CONFIGURE_COMMAND
         ${CMAKE_COMMAND} -E env ${libicu_feature_excludes}
         ./source/configure ${sessiondeps_cross_host} ${icu_cross_build} --enable-static

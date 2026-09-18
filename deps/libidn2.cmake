@@ -8,7 +8,7 @@ session_dep(libunistring 0.9)
 
 sessiondep_build_external(libidn2
     # Patch out building the tools because they make a compilation with -flto take a very long time:
-    PATCH_COMMAND patch -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/libidn2-no-tools.patch
+    PATCH_COMMAND ${sessiondeps_patch} -p1 -i ${CMAKE_CURRENT_LIST_DIR}/patches/libidn2-no-tools.patch
     CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} --disable-shared --disable-doc --prefix=${SESSIONDEPS_DESTDIR} --with-pic
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
         "CFLAGS=${sessiondeps_CFLAGS}"

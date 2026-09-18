@@ -302,10 +302,16 @@ else()
     set(deps_make make)
 endif()
 
+# -N -f so that patch never stops to ask a question: run from a terminal, a patch that no longer
+# applies waits for an answer forever instead of failing.  Both flags make it fail rather than
+# guess, unlike --batch, which answers "yes, it looks reversed" and then exits successfully having
+# undone the patch.
+set(deps_patch patch -N -f)
+
 # Promote any variables set above as `deps_whatever` to a cache variable `sessiondeps_whatever` so
 # that the functions below and build scripts can reference them:
 foreach(var IN ITEMS
-        cc cxx CFLAGS CXXFLAGS ldflags make cross_host raw_cross_host cross_rc
+        cc cxx CFLAGS CXXFLAGS ldflags make patch cross_host raw_cross_host cross_rc
         android_machine cmake_osx_args cmake_toolchain_args)
     if(DEFINED deps_${var})
         set(sessiondeps_${var} "${deps_${var}}" CACHE INTERNAL "" FORCE)

@@ -34,6 +34,9 @@
 #ifdef HAVE_DEP_LIBIDN2
 #include <idn2.h>
 #endif
+#ifdef HAVE_DEP_LIBMICROHTTPD
+#include <microhttpd.h>
+#endif
 #ifdef HAVE_DEP_LIBNGTCP2
 #include <ngtcp2/ngtcp2.h>
 #endif
@@ -118,6 +121,9 @@ int main() {
 #endif
 #ifdef HAVE_DEP_LIBIDN2
     std::printf("libidn2: %s\n", idn2_check_version(nullptr));
+#endif
+#ifdef HAVE_DEP_LIBMICROHTTPD
+    std::printf("libmicrohttpd: %s\n", MHD_get_version());
 #endif
 #ifdef HAVE_DEP_LIBNGTCP2
     std::printf("libngtcp2: %s\n", ngtcp2_version(0)->version_str);

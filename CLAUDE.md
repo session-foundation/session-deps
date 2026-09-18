@@ -135,6 +135,9 @@ build.
 `main.cpp`, which calls something from each and prints its version.  `HAVE_DEP_*` is defined per
 recipe built, so the calls follow `SKIP_DEPS`.
 
+The glob covers building, but the calls in `main.cpp` are written by hand, so **a new recipe gets
+built and linked with nothing exercising it until someone adds one**.  Add the call with the recipe.
+
     cmake -S test -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DLOCAL_MIRROR=https://oxen.rocks/deps
     ninja -C build
 

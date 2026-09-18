@@ -22,7 +22,7 @@ dependencies of the many Session subprojects.
     # the subdirectory to add if the system lib is not found; and the fourth (and beyond, if given)
     # is the name of the target that session::${pkg} should point at if the subdirectory approach is
     # taken.
-    session_dep_or_submodule(CLI11 2.2.0 path/to/cli11 CLI11::CLI11)
+    sessiondep_or_submodule(CLI11 2.2.0 path/to/cli11 CLI11::CLI11)
 
 The first example above will attempt to find ngtcp2 via system library (at least version 1.5.0), and
 if not found will fall back to a static build.  The second example loads attempts to load CLI11 via
@@ -36,7 +36,7 @@ target.
 
 This is the "all static" master switch: if set to true (e.g. via `-DBUILD_STATIC_DEPS=ON` or
 `set(BUILD_STATIC_DEPS ON CACHE BOOL "")`) then all `session_dep(...)` calls build static
-dependencies and ignore anything on the system, and all `session_dep_or_submodule(...)` calls
+dependencies and ignore anything on the system, and all `sessiondep_or_submodule(...)` calls
 similarly force the submodule to be used (as if `DEPS_FORCE_SUBMODULE=ON` was set).
 
 ### `BUILD_STATIC_${pkg}=ON`
@@ -51,12 +51,12 @@ Enabled or disable LTO for static dependency builds, where supported.
 
 ### `DEPS_FORCE_SUBMODULE=ON`
 
-This flag forces all `session_dep_or_submodule` calls to take the submodule route, bypassing the
+This flag forces all `sessiondep_or_submodule` calls to take the submodule route, bypassing the
 detection of system libraries.  Note that this behaviour is also enabled by `BUILD_STATIC_DEPS=ON`.
 
 ### `DEPS_FORCE_${pkg}_SUBMODULE=ON`
 
-This flag overrides `session_dep_or_submodule` for just a single package to force that package to
+This flag overrides `sessiondep_or_submodule` for just a single package to force that package to
 ignore system libs and use a submodule.
 
 ### `LOCAL_MIRROR`
@@ -103,7 +103,7 @@ missing.  For example:
 will create sessiondep::libngtcp2 and sessiondep::libngtcp2_crypto_gnutls targets, either both
 loaded from the system, or both coming from a static dep build.
 
-## `session_dep_or_submodule(...)`
+## `sessiondep_or_submodule(...)`
 
 This is similar to `session_dep` in that it first attempts to load a system library, but if it fails
 then instead of using a repo build scripts it instead adds a given submodule path (relative to where
@@ -142,7 +142,7 @@ to date.
 
 Static package builds go into deps/PKG.cmake, where PKG is the pkg-config name, and generally should
 make use of deps/StaticBuild.cmake as much as possible for compiler flags and settings, by calling
-the sessiondep_build_external_target() and sessiondep_add_static_target() functions.
+the `sessiondep_build_external()` and `sessiondep_static_target()` functions.
 
 The individual `deps/PKG.cmake` should never be included directly, but only through the
 `session_dep()` function.  Various deps themselves make use of `session_dep()` for sub-dependencies

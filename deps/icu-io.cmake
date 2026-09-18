@@ -38,7 +38,11 @@ if(CMAKE_CROSSCOMPILING)
     )
 
     set(icu_native_dep DEPENDS sessiondep_icu-io-native_external)
-    set(icu_cross_build --with-cross-build=${icu_native_root})
+    # --disable-tools: the tools exist to generate the data, and a cross build runs the native
+    # build's copies instead (its config/icucross.mk points TOOLBINDIR at them), so building them
+    # for the target is wasted work.  It is also impossible for iOS, whose SDK makes system(3)
+    # unavailable to pkgdata.
+    set(icu_cross_build --with-cross-build=${icu_native_root} --disable-tools)
 endif()
 
 sessiondep_build_external(icu-io

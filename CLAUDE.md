@@ -149,6 +149,13 @@ what the project builds; dependency resolution still runs a plain `pkg-config --
 dav1d.  It also picks up `Cflags.private`, which is where a library tends to hide its Windows
 "I am static" define.
 
+**`prefer_static` hides the destdir from meson's library search.**  Dependencies with no pkg-config
+method — `intl` and `iconv` among them — end in `find_library()`, which normally runs a `-lname`
+link test that sees the `-L` in `c_link_args`.  With `prefer_static` on it runs a filesystem scan of
+the compiler's built-in directories instead, and a library installed here is simply not found.  glib
+turns it back off for this reason; a recipe whose dependencies include such a library needs the
+same.
+
 **Autotools flags can be silently inert.**  `AC_ARG_WITH` names are collected at generation time, so
 a flag whose handling sits inside a conditional is accepted and ignored with no warning
 (`--without-ssl` does nothing for unbound once `--with-nettle` is given).  Check that a flag reaches

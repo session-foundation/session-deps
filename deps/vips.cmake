@@ -28,6 +28,11 @@ session_dep(imagequant 2)
 # HAVE_SPNG in the generated config.h instead.
 #
 # Re-check this list on a version bump; a newly added option defaults to 'auto' like the rest.
+#
+# glib's headers include <libintl.h>, which on some targets comes from a provider outside the
+# destdir.
+sessiondep_providers_meson_args(vips_providers_meson)
+
 sessiondep_build_external(vips
     PATCHES vips-no-tools-test-fuzz.patch
     CONFIGURE_COMMAND DEFAULT_MESON
@@ -84,6 +89,7 @@ sessiondep_build_external(vips
       -Dppm=false
       -Danalyze=false
       -Dradiance=false
+      ${vips_providers_meson}
     DEPENDS
       sessiondep::glib-2.0 sessiondep::expat
       sessiondep::libjpeg sessiondep::spng sessiondep::libwebp sessiondep::libexif

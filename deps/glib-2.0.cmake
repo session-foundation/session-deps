@@ -10,10 +10,47 @@ session_dep(zlib 1.2)
 
 find_package(Threads REQUIRED)
 
-# glib always wants a gettext provider: -Dnls=disabled only gates xgettext, it does not remove the
-# dependency('intl') call.  glibc provides ngettext in libc, so this resolves there; everywhere else
-# glib falls back to its proxy-libintl *wrap*, which --wrap-mode=nodownload refuses.  Non-glibc
-# targets therefore need subprojects/proxy-libintl pre-populated before meson runs.
+# glib calls dependency('intl') unconditionally -- -Dnls=disabled only gates xgettext -- and, except
+# on Windows where it bundles win_iconv.c, dependency('iconv').  meson resolves both from the C
+# library when it provides them, and otherwise with a find_library() link test that honours the -L
+# in c_link_args.  That link test only runs when the library type is not forced static:
+# prefer_static replaces it with a scan of the compiler's built-in directories, which never include
+# the destdir.  glib is therefore built with prefer_static off (meson takes the last -D of a given
+# name, overriding DEFAULT_MESON's); its own dependencies arrive through pkg-config files that list
+# everything in Libs, so it loses nothing by it.
+#
+# Where the C library lacks either, the provider built here is supplied; StaticBuild.cmake works out
+# which the target needs, and installs them apart from the destdir, where
+# sessiondep_providers_meson_args() points glib at them.
+set(glib_extra_deps)
+if(sessiondeps_need_libintl)
+    session_dep(proxy-libintl 0.5)
+    list(APPEND glib_extra_deps sessiondep::proxy-libintl)
+endif()
+if(sessiondeps_need_libiconv)
+    session_dep(libiconv 1.17)
+    list(APPEND glib_extra_deps sessiondep::libiconv)
+endif()
+
+sessiondep_providers_meson_args(glib_extra_meson)
+list(APPEND glib_extra_meson -Dprefer_static=false)
+
+set(glib_extra_libs)
+if(APPLE)
+    # Every Apple SDK, iOS and the simulator included, carries iconv.h and a libiconv.2.tbd stub --
+    # Apple's mark of a public, linkable system library -- and it exists only as a dylib.  resolv
+    # backs gio's DNS on every Apple platform.
+    set(glib_extra_libs iconv resolv)
+    # The rest is what glib-2.0.pc and gio-2.0.pc declare on macOS: gio's notification backend is
+    # Objective-C, so the frameworks behind it have to be named for a static link.  glib builds its
+    # Cocoa and Carbon support only for the macos subsystem; iOS has no AppKit or Carbon to link.
+    if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+        list(APPEND glib_extra_libs
+            "-framework Foundation" "-framework CoreFoundation"
+            "-framework AppKit" "-framework Carbon")
+    endif()
+endif()
+
 # Consumers reach glib's build tools through glib-2.0.pc's own `glib_mkenums` and `glib_genmarshal`
 # variables, and meson treats a path there that does not exist as a fatal packaging error rather
 # than falling back to one on PATH -- so those tools have to be installed even though nothing runs
@@ -35,7 +72,8 @@ sessiondep_build_external(glib-2.0
       -Ddocumentation=false
       -Dman-pages=disabled
       -Dmultiarch=false
-    DEPENDS sessiondep::libffi sessiondep::libpcre2-8 sessiondep::zlib
+      ${glib_extra_meson}
+    DEPENDS sessiondep::libffi sessiondep::libpcre2-8 sessiondep::zlib ${glib_extra_deps}
     BUILD_BYPRODUCTS
       ${SESSIONDEPS_DESTDIR}/lib/libglib-2.0.a
       ${SESSIONDEPS_DESTDIR}/lib/libgobject-2.0.a
@@ -64,11 +102,26 @@ foreach(tgt sessiondep_glib sessiondep_gmodule sessiondep_gobject sessiondep_gio
         ${SESSIONDEPS_DESTDIR}/lib/glib-2.0/include)
 endforeach()
 
+# Each component's *-visibility.h declares its API __declspec(dllimport) on Windows unless told the
+# library is static, and glib's own .pc files do not say so.
+target_compile_definitions(sessiondep_glib INTERFACE GLIB_STATIC_COMPILATION)
+target_compile_definitions(sessiondep_gmodule INTERFACE GMODULE_STATIC_COMPILATION)
+target_compile_definitions(sessiondep_gobject INTERFACE GOBJECT_STATIC_COMPILATION)
+target_compile_definitions(sessiondep_gio INTERFACE GIO_STATIC_COMPILATION)
+
 if(NOT WIN32)
-    target_link_libraries(sessiondep_glib INTERFACE m ${CMAKE_DL_LIBS} Threads::Threads)
+    target_link_libraries(sessiondep_glib INTERFACE m ${CMAKE_DL_LIBS} Threads::Threads ${glib_extra_libs})
 else()
-    # gio's networking needs the socket stack, and glib's own timing/path code wants the rest.
-    target_link_libraries(sessiondep_glib INTERFACE ws2_32 winmm ole32 shlwapi)
+    # This mirrors what glib's own meson declares and what the installed glib-2.0.pc and gio-2.0.pc
+    # carry in their Libs, which is where to check it after a version bump: gio reaches for the
+    # adapter and routing table APIs (iphlpapi) and the resolver (dnsapi) on top of the socket
+    # stack, and none of that is implicit in a static link.
+    target_link_libraries(sessiondep_glib INTERFACE
+        ws2_32 iphlpapi dnsapi winmm ole32 shlwapi uuid)
+endif()
+
+if(glib_extra_deps)
+    target_link_libraries(sessiondep_glib INTERFACE ${glib_extra_deps})
 endif()
 
 sessiondep_bundle(glib-2.0 sessiondep_glib)

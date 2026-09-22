@@ -11,9 +11,14 @@ sessiondep_build_external(libpcre2-8
     "CC=${sessiondeps_cc}" "CFLAGS=${sessiondeps_CFLAGS}" ${sessiondeps_cross_rc}
     # Naming the library target and the matching install targets keeps pcre2grep and pcre2test from
     # being built at all; the default `all` builds both and installs them into bin.
+    #
+    # pcre2.h needs install-nodist_includeHEADERS, not install-includeHEADERS: it is generated from
+    # pcre2.h.in, so automake files it under nodist_include_HEADERS and the two have separate
+    # install rules.  Omitting it leaves a destdir with the library but no header, which a native
+    # build does not notice because the system copy is on the include path.
     BUILD_COMMAND ${sessiondeps_make} libpcre2-8.la
     INSTALL_COMMAND ${sessiondeps_make}
-        install-libLTLIBRARIES install-includeHEADERS install-pkgconfigDATA
+        install-libLTLIBRARIES install-nodist_includeHEADERS install-pkgconfigDATA
     BUILD_BYPRODUCTS
     ${SESSIONDEPS_DESTDIR}/lib/libpcre2-8.a
     ${SESSIONDEPS_DESTDIR}/include/pcre2.h

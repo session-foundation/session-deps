@@ -42,6 +42,11 @@ sessiondep_build_external(libheif
       -DWITH_FFMPEG_DECODER=OFF
       -DWITH_UNCOMPRESSED_CODEC=OFF
       -DWITH_LIBSHARPYUV=OFF
+      # libheif's own libde265 decoder includes de265.h, which declares the API dllimport on Windows
+      # unless told the library is static; libde265.pc says so in Cflags.private, and libheif's
+      # finder never applies it.  This replaces the CMAKE_CXX_FLAGS the toolchain arguments
+      # forward, so it restates their stdlib selection.
+      "-DCMAKE_CXX_FLAGS=${sessiondeps_cxx_stdlib} -DLIBDE265_STATIC_BUILD"
     DEPENDS sessiondep::libde265 sessiondep::dav1d
     BUILD_BYPRODUCTS
       ${SESSIONDEPS_DESTDIR}/lib/libheif.a
@@ -50,6 +55,10 @@ sessiondep_build_external(libheif
 
 sessiondep_static_simple(libheif sessiondep::libde265 sessiondep::dav1d)
 set_target_properties(sessiondep_ext_libheif PROPERTIES IMPORTED_LINK_INTERFACE_LANGUAGES CXX)
+
+# heif_export.h declares the API __declspec(dllimport) on Windows unless told the library is static.
+# libheif.pc says so in Cflags.private, which only a pkg-config consumer sees.
+target_compile_definitions(sessiondep_ext_libheif INTERFACE LIBHEIF_STATIC_BUILD)
 
 # A caller decoding untrusted input should set heif_context_set_security_limits() rather than
 # inheriting the global defaults: max_number_of_tiles, max_items and max_total_memory all bound

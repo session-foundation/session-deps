@@ -20,7 +20,7 @@ sessiondep_build_external(gnutls
     CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} --disable-shared --prefix=${SESSIONDEPS_DESTDIR} --with-pic
         --without-p11-kit --disable-libdane --disable-cxx --without-tpm --without-tpm2 --disable-doc
         --without-zlib --without-brotli --without-zstd --without-libintl-prefix --disable-tests
-        --disable-valgrind-tests --disable-full-test-suite --disable-tools
+        --disable-valgrind-tests --disable-full-test-suite --disable-tools --disable-nls
         "PKG_CONFIG_LIBDIR=${SESSIONDEPS_DESTDIR}/lib/pkgconfig" "PKG_CONFIG=pkg-config"
         "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include" "LDFLAGS=${sessiondeps_ldflags}"
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"

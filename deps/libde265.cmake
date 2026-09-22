@@ -29,3 +29,6 @@ if(NOT WIN32)
 endif()
 sessiondep_static_simple(libde265 ${libde265_extra})
 set_target_properties(sessiondep_ext_libde265 PROPERTIES IMPORTED_LINK_INTERFACE_LANGUAGES CXX)
+
+# de265.h declares the API __declspec(dllimport) on Windows unless told the library is static.
+target_compile_definitions(sessiondep_ext_libde265 INTERFACE LIBDE265_STATIC_BUILD)

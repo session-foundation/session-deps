@@ -308,11 +308,124 @@ endif()
 # undone the patch.
 set(deps_patch patch -N -f)
 
+# libjpeg-turbo and dav1d both carry hand-written x86 assembly that nasm assembles, and both fall
+# back to plain C without it -- building and working correctly, just several times slower, with the
+# explanation buried in one dependency's configure output.  That is exactly the kind of regression
+# that ships unnoticed, so the check happens once, here, and says so loudly.
+#
+# Only x86 is affected: on Arm, dav1d's assembly goes through the C compiler and libjpeg-turbo uses
+# intrinsics, neither of which wants nasm.
+set(deps_no_x86_asm FALSE)
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^([Xx]86_64|[Aa][Mm][Dd]64|i[3-6]86)$"
+        OR ARCH_TRIPLET MATCHES "^(x86_64|i[3-6]86)")
+    find_program(SESSIONDEPS_NASM NAMES nasm)
+    if(NOT SESSIONDEPS_NASM)
+        set(deps_no_x86_asm TRUE)
+        message(WARNING "nasm was not found: libjpeg-turbo and dav1d will be built without their "
+            "x86 assembly, which makes JPEG and AVIF decoding markedly slower.  Install nasm.")
+    endif()
+endif()
+
+# Meson-based deps (DEFAULT_MESON).  Not required unless a recipe asks for one, so a missing tool is
+# diagnosed in sessiondep_build_external() rather than here.
+find_program(SESSIONDEPS_MESON meson)
+find_program(SESSIONDEPS_NINJA NAMES ninja ninja-build)
+set(deps_meson "${SESSIONDEPS_MESON}")
+set(deps_ninja "${SESSIONDEPS_NINJA}")
+
+# meson resolves dependencies through pkg-config, and has to see both what we have installed into
+# the destdir and anything session_dep() satisfied from the system, with ours taking precedence: a
+# static libvips can perfectly well sit on a system glib.  This is PKG_CONFIG_LIBDIR rather than
+# PKG_CONFIG_PATH because the latter is searched *after* the default path, which would let a system
+# copy of something we just built win.
+set(deps_pkg_config_libdir "${SESSIONDEPS_DESTDIR}/lib/pkgconfig")
+if(NOT CMAKE_CROSSCOMPILING)
+    # Cross builds get only our destdir appended: the host's .pc files describe the wrong
+    # architecture, and picking one up produces a link failure a long way from its cause.
+    find_package(PkgConfig)
+    if(PKG_CONFIG_EXECUTABLE)
+        execute_process(COMMAND ${PKG_CONFIG_EXECUTABLE} --variable pc_path pkg-config
+            OUTPUT_VARIABLE deps_pkg_config_syspath
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET)
+        if(deps_pkg_config_syspath)
+            set(deps_pkg_config_libdir "${deps_pkg_config_libdir}:${deps_pkg_config_syspath}")
+        endif()
+    endif()
+endif()
+
+# meson has no equivalent of autoconf's --host: a cross build is described entirely by a cross file
+# naming the target machine and the tools to reach it, so we have to write one.  Generated here, at
+# configure time, rather than per-recipe, because every meson dep needs the same one.
+set(deps_meson_cross "")
+if(CMAKE_CROSSCOMPILING)
+    if(CMAKE_SYSTEM_NAME MATCHES "^(iOS|tvOS|watchOS|visionOS|Darwin)$")
+        set(_sdep_meson_system darwin)
+    else()
+        string(TOLOWER "${CMAKE_SYSTEM_NAME}" _sdep_meson_system)
+    endif()
+
+    # meson matches cpu_family against its own fixed vocabulary, which is neither cmake's spelling
+    # nor the triplet's, so the triplet gets translated rather than passed through.
+    set(_sdep_meson_cpu "${CMAKE_SYSTEM_PROCESSOR}")
+    if(ARCH_TRIPLET)
+        string(REGEX REPLACE "-.*" "" _sdep_meson_cpu "${ARCH_TRIPLET}")
+    endif()
+    if(_sdep_meson_cpu MATCHES "^(x86_64|amd64)$")
+        set(_sdep_meson_cpu_family x86_64)
+    elseif(_sdep_meson_cpu MATCHES "^i[3-6]86$")
+        set(_sdep_meson_cpu_family x86)
+    elseif(_sdep_meson_cpu MATCHES "^(aarch64|arm64)")
+        set(_sdep_meson_cpu_family aarch64)
+    elseif(_sdep_meson_cpu MATCHES "^arm")
+        set(_sdep_meson_cpu_family arm)
+    else()
+        message(FATAL_ERROR "Don't know how to name cpu '${_sdep_meson_cpu}' for a meson cross file")
+    endif()
+
+    # deps_cc can carry a compiler launcher ("ccache gcc"); meson wants that as a list.
+    foreach(lang cc cxx)
+        string(REPLACE " " ";" _sdep_meson_${lang}_parts "${deps_${lang}}")
+        set(_sdep_meson_${lang} "")
+        foreach(part IN LISTS _sdep_meson_${lang}_parts)
+            string(APPEND _sdep_meson_${lang} "'${part}', ")
+        endforeach()
+        string(REGEX REPLACE ", $" "" _sdep_meson_${lang} "${_sdep_meson_${lang}}")
+    endforeach()
+
+    set(_sdep_meson_extra_bins "")
+    if(CMAKE_AR)
+        string(APPEND _sdep_meson_extra_bins "ar = '${CMAKE_AR}'\n")
+    endif()
+    if(CMAKE_STRIP)
+        string(APPEND _sdep_meson_extra_bins "strip = '${CMAKE_STRIP}'\n")
+    endif()
+    if(CMAKE_RC_COMPILER AND ARCH_TRIPLET MATCHES mingw)
+        string(APPEND _sdep_meson_extra_bins "windres = '${CMAKE_RC_COMPILER}'\n")
+    endif()
+
+    set(deps_meson_cross "${CMAKE_BINARY_DIR}/sessiondeps-meson-cross.ini")
+    file(WRITE "${deps_meson_cross}"
+"# Generated by session-deps; edits will be overwritten.
+[binaries]
+c = [${_sdep_meson_cc}]
+cpp = [${_sdep_meson_cxx}]
+pkg-config = 'pkg-config'
+${_sdep_meson_extra_bins}
+[host_machine]
+system = '${_sdep_meson_system}'
+cpu_family = '${_sdep_meson_cpu_family}'
+cpu = '${_sdep_meson_cpu}'
+endian = 'little'
+")
+endif()
+
 # Promote any variables set above as `deps_whatever` to a cache variable `sessiondeps_whatever` so
 # that the functions below and build scripts can reference them:
 foreach(var IN ITEMS
         cc cxx CFLAGS CXXFLAGS ldflags make patch cross_host raw_cross_host cross_rc
-        android_machine cmake_osx_args cmake_toolchain_args)
+        android_machine cmake_osx_args cmake_toolchain_args
+        meson ninja meson_cross pkg_config_libdir no_x86_asm)
     if(DEFINED deps_${var})
         set(sessiondeps_${var} "${deps_${var}}" CACHE INTERNAL "" FORCE)
     endif()
@@ -434,7 +547,12 @@ function(sessiondep_build_external target)
     string(REPLACE ___TARGET___ ${target} arg_BUILD_BYPRODUCTS "${arg_BUILD_BYPRODUCTS}")
 
     if(arg_CONFIGURE_COMMAND MATCHES "^DEFAULT_CMAKE")
-        set(_default_cmake_args "-DCMAKE_INSTALL_PREFIX=${SESSIONDEPS_DESTDIR}")
+        # GNUInstallDirs resolves libdir to lib64 on Fedora/openSUSE and lib/<triplet> on Debian,
+        # neither of which is where sessiondep_static_target() looks.  Pin it, as the meson path
+        # does with --libdir.
+        set(_default_cmake_args
+            "-DCMAKE_INSTALL_PREFIX=${SESSIONDEPS_DESTDIR}"
+            "-DCMAKE_INSTALL_LIBDIR=lib")
         if(sessiondeps_cmake_toolchain_args)
             list(APPEND _default_cmake_args ${sessiondeps_cmake_toolchain_args})
         endif()
@@ -445,6 +563,58 @@ function(sessiondep_build_external target)
         set(build "")
         set(install "")
         # CMake projects build out-of-source, and some (utf8proc) refuse in-source outright.
+        set(in_source OFF)
+    elseif(arg_CONFIGURE_COMMAND MATCHES "^DEFAULT_MESON")
+        if(NOT sessiondeps_meson OR NOT sessiondeps_ninja)
+            message(FATAL_ERROR "sessiondep_build_external(${target}): meson and ninja are required to build this dependency, but were not found")
+        endif()
+
+        string(REGEX REPLACE "^DEFAULT_MESON;?" "" _meson_extra "${arg_CONFIGURE_COMMAND}")
+
+        set(_meson_cross_arg)
+        if(sessiondeps_meson_cross)
+            set(_meson_cross_arg --cross-file ${sessiondeps_meson_cross})
+        endif()
+
+        # --wrap-mode=nodownload is what keeps a meson dep honest: left to itself meson silently
+        # fetches a missing dependency from WrapDB at configure time, which would pull in code that
+        # never passed through our hash-pinned tarballs.  Subprojects already vendored in the
+        # tarball (glib ships gvdb this way) still resolve.
+        set(configure CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env
+            "PKG_CONFIG_LIBDIR=${sessiondeps_pkg_config_libdir}"
+            "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
+            ${sessiondeps_meson} setup <BINARY_DIR> <SOURCE_DIR>
+                --prefix=${SESSIONDEPS_DESTDIR}
+                --libdir=lib
+                --default-library=static
+                --buildtype=release
+                --wrap-mode=nodownload
+                # --default-library only governs what this project builds; without prefer_static,
+                # meson still resolves its *dependencies* with a plain `pkg-config --libs`, which
+                # omits Requires.private and Libs.private.  Those are exactly where a static
+                # library records what it needs -- libheif.pc puts libde265 and dav1d there -- so
+                # the link fails on symbols from a dependency's dependency.  It also picks up
+                # Cflags.private, which is where a library hides its "I am static" define for
+                # Windows.
+                -Dprefer_static=true
+                -Dc_args=${sessiondeps_CFLAGS}
+                -Dcpp_args=${sessiondeps_CXXFLAGS}
+                -Dc_link_args=${sessiondeps_ldflags}
+                -Dcpp_link_args=${sessiondeps_ldflags}
+                ${_meson_cross_arg}
+                ${_meson_extra})
+        set(build BUILD_COMMAND ${sessiondeps_ninja} -C <BINARY_DIR>)
+        # Install only what a consumer links against.  meson offers no way to avoid *building* a
+        # project's command line tools, but nothing here runs them, and statically linked they
+        # dwarf the libraries -- libvips' four are 19MB each.
+        #
+        # bin-devel is needed alongside devel: it is the tag glib puts on glib-mkenums and
+        # glib-genmarshal, which are not end-user tools but build tools that libvips invokes
+        # through gnome.mkenums().  meson locates them via glib-2.0.pc's own `glib_mkenums`
+        # variable and treats a path that does not exist as a fatal packaging error, so omitting
+        # them fails libvips' configure rather than falling back to a copy on PATH.
+        set(install INSTALL_COMMAND
+            ${sessiondeps_meson} install -C <BINARY_DIR> --tags devel,bin-devel --no-rebuild)
         set(in_source OFF)
     else()
         set(configure CONFIGURE_COMMAND ${arg_CONFIGURE_COMMAND})

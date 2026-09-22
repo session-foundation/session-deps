@@ -369,10 +369,23 @@ endif()
 
 # Meson-based deps (DEFAULT_MESON).  Not required unless a recipe asks for one, so a missing tool is
 # diagnosed in sessiondep_build_external() rather than here.
+#
+# 1.4 is what glib requires.  Older ones fail in less obvious ways first: before 0.63, the
+# -Dprefer_static every recipe passes is an unknown option.
+set(deps_meson_min_version 1.4.0)
 find_program(SESSIONDEPS_MESON meson)
 find_program(SESSIONDEPS_NINJA NAMES ninja ninja-build)
 set(deps_meson "${SESSIONDEPS_MESON}")
 set(deps_ninja "${SESSIONDEPS_NINJA}")
+set(deps_meson_missing "meson and ninja are required to build this dependency, but were not found")
+if(deps_meson)
+    execute_process(COMMAND ${deps_meson} --version
+        OUTPUT_VARIABLE _sdep_meson_version OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
+    if(_sdep_meson_version VERSION_LESS deps_meson_min_version)
+        set(deps_meson_missing "meson >= ${deps_meson_min_version} is required to build this dependency, but ${deps_meson} is version ${_sdep_meson_version}")
+        set(deps_meson "")
+    endif()
+endif()
 
 # meson resolves dependencies through pkg-config, and has to see both what we have installed into
 # the destdir and anything session_dep() satisfied from the system, with ours taking precedence: a
@@ -495,7 +508,7 @@ endif()
 foreach(var IN ITEMS
         cc cxx CFLAGS CXXFLAGS cxx_stdlib ldflags make patch cross_host raw_cross_host cross_rc
         android_machine cmake_osx_args cmake_toolchain_args
-        meson ninja meson_cross pkg_config_libdir no_x86_asm need_libintl need_libiconv)
+        meson ninja meson_missing meson_cross pkg_config_libdir no_x86_asm need_libintl need_libiconv)
     if(DEFINED deps_${var})
         set(sessiondeps_${var} "${deps_${var}}" CACHE INTERNAL "" FORCE)
     endif()
@@ -675,7 +688,7 @@ function(sessiondep_build_external target)
         set(in_source OFF)
     elseif(arg_CONFIGURE_COMMAND MATCHES "^DEFAULT_MESON")
         if(NOT sessiondeps_meson OR NOT sessiondeps_ninja)
-            message(FATAL_ERROR "sessiondep_build_external(${target}): meson and ninja are required to build this dependency, but were not found")
+            message(FATAL_ERROR "sessiondep_build_external(${target}): ${sessiondeps_meson_missing}")
         endif()
 
         string(REGEX REPLACE "^DEFAULT_MESON;?" "" _meson_extra "${arg_CONFIGURE_COMMAND}")

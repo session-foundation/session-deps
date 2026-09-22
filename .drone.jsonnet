@@ -31,6 +31,8 @@ local build_commands(jobs, cmake_extra='', run_test='./deps-test') = [
   'ninja -j' + jobs + ' -v',
 ] + (if run_test == '' then [] else [run_test]);
 
+// glib needs meson >= 1.4.  `meson` is the package name to install it from, for a release whose own
+// is too old; `meson_setup` runs after the package install, for one where no package will do.
 local linux_pipeline(name,
                      image,
                      arch='amd64',
@@ -38,6 +40,9 @@ local linux_pipeline(name,
                      cmake_extra='',
                      jobs=6,
                      run_test='./deps-test',
+                     apt_sources=[],
+                     meson='meson',
+                     meson_setup=[],
                      allow_fail=false) = {
   kind: 'pipeline',
   type: 'docker',
@@ -51,11 +56,15 @@ local linux_pipeline(name,
     commands: [
       'echo "Building on ${DRONE_STAGE_MACHINE}"',
       'echo "man-db man-db/auto-update boolean false" | debconf-set-selections',
+    ] + [
+      'echo "' + src + '" >> /etc/apt/sources.list.d/extra.list'
+      for src in apt_sources
+    ] + [
       apt_get_quiet + ' update',
       apt_get_quiet + ' install -y eatmydata',
-      'eatmydata ' + apt_get_quiet + ' install --no-install-recommends -y ninja-build '
+      'eatmydata ' + apt_get_quiet + ' install --no-install-recommends -y ninja-build ' + meson + ' '
       + build_tools + ' ' + extra_pkgs,
-    ] + build_commands(jobs, cmake_extra, run_test),
+    ] + meson_setup + build_commands(jobs, cmake_extra, run_test),
   }],
 };
 
@@ -109,8 +118,17 @@ local ios_pipeline(name, platform, jobs=6, allow_fail=false) = mac_pipeline(
 [
   linux_pipeline('Debian sid (amd64)', docker_base + 'debian-sid'),
   // The arm builders run out of memory above 4 concurrent compiles.
-  linux_pipeline('Debian bookworm (arm64)', docker_base + 'debian-bookworm', arch='arm64', jobs=4),
-  linux_pipeline('Ubuntu jammy (amd64)', docker_base + 'ubuntu-jammy'),
+  linux_pipeline('Debian bookworm (arm64)',
+                 docker_base + 'debian-bookworm',
+                 arch='arm64',
+                 jobs=4,
+                 apt_sources=['deb http://deb.debian.org/debian bookworm-backports main'],
+                 meson='meson/bookworm-backports'),
+  // Nothing packaged for jammy is new enough, not even in backports, and meson is pure Python.
+  linux_pipeline('Ubuntu jammy (amd64)',
+                 docker_base + 'ubuntu-jammy',
+                 meson='python3-pip',
+                 meson_setup=['pip3 install --no-cache-dir meson==1.7.0']),
   // armhf is built on an arm64 machine, as the 32-bit runners are.
   linux_pipeline('Debian trixie (armhf)', docker_base + 'debian-trixie/arm32v7', arch='arm64', jobs=4),
 

@@ -1,0 +1,17 @@
+libvips builds its command line tools, its test programs and its fuzzers as part of `all`, with no
+option to turn any of them off. Against a static dependency stack that is around nineteen
+executables, each linking the whole of libvips and everything beneath it -- the four tools alone are
+19MB apiece -- and nothing here runs them.
+
+Upstream strips these same three lines with a regexp for its oss-fuzz builds, per the comment above
+them, so this is a seam it already expects to be cut.
+
+--- a/meson.build
++++ b/meson.build
+@@ -778,6 +778,3 @@
+ # these lines removed by a regexp for oss-fuzz builds, don't touch!
+ subdir('man')
+ subdir('po')
+-subdir('tools')
+-subdir('test')
+-subdir('fuzz')

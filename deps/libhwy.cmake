@@ -1,6 +1,9 @@
 set(LIBHWY_VERSION 1.4.0)
-set(LIBHWY_MIRROR https://github.com/google/highway/archive/refs/tags)
-set(LIBHWY_SOURCE ${LIBHWY_VERSION}.tar.gz)
+# GitHub names a tag archive after the tag alone, so the plain URL yields a "1.4.0.tar.gz" that says
+# nothing about what it holds.  Appending the filename we want to the tag path serves the identical
+# bytes under a name that is meaningful in the flat namespace of a download mirror.
+set(LIBHWY_MIRROR https://github.com/google/highway/archive/refs/tags/${LIBHWY_VERSION})
+set(LIBHWY_SOURCE highway-${LIBHWY_VERSION}.tar.gz)
 set(LIBHWY_HASH SHA512=819422857d6a74e3a936c402698e078db5b7b88fb43767e62429ec7bd954fe93b017e75029a4df4a1a97ef3a2486107eef5247da751eb487640dea409f3f2fa2)
 
 # Not a format: this is the SIMD backend libvips uses for resize and reduce, which is the hot path

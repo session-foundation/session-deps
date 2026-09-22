@@ -1,6 +1,6 @@
 set(CGIF_VERSION 0.5.4)
-set(CGIF_MIRROR https://github.com/dloebl/cgif/archive/refs/tags)
-set(CGIF_SOURCE v${CGIF_VERSION}.tar.gz)
+set(CGIF_MIRROR https://github.com/dloebl/cgif/archive/refs/tags/v${CGIF_VERSION})
+set(CGIF_SOURCE cgif-${CGIF_VERSION}.tar.gz)
 set(CGIF_HASH SHA512=f0db0b08b12cebe6d4b0cd695fb24e37a170e57b36cd873a18ac6114c76a5dd082af5f5c5e8452bd9f2e3bb31d943d1692351300bfde5a00a7768a5dea1e146a)
 
 # GIF *save* only -- libvips loads GIF with its own vendored nsgif and needs nothing external for

@@ -1,6 +1,6 @@
 set(LIBWEBP_VERSION 1.6.0)
-set(LIBWEBP_MIRROR https://github.com/webmproject/libwebp/archive/refs/tags)
-set(LIBWEBP_SOURCE v${LIBWEBP_VERSION}.tar.gz)
+set(LIBWEBP_MIRROR https://github.com/webmproject/libwebp/archive/refs/tags/v${LIBWEBP_VERSION})
+set(LIBWEBP_SOURCE libwebp-${LIBWEBP_VERSION}.tar.gz)
 set(LIBWEBP_HASH SHA512=298e0ad4c09392213baf5abb69d330c6203b618800073fe2df91d01d35034197c5d3e29a74573b06971473c52c74514f0e6e0f6c8162f923e2dd15cb1a692aef)
 
 # libvips insists on all three of libwebp, libwebpmux and libwebpdemux -- it splits animation and

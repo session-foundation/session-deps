@@ -1,6 +1,6 @@
 set(IMAGEQUANT_VERSION 2.4.1)
-set(IMAGEQUANT_MIRROR https://github.com/lovell/libimagequant/archive/refs/tags)
-set(IMAGEQUANT_SOURCE v${IMAGEQUANT_VERSION}.tar.gz)
+set(IMAGEQUANT_MIRROR https://github.com/lovell/libimagequant/archive/refs/tags/v${IMAGEQUANT_VERSION})
+set(IMAGEQUANT_SOURCE libimagequant-${IMAGEQUANT_VERSION}.tar.gz)
 set(IMAGEQUANT_HASH SHA512=3972eb26c603c46eff40f60992619a73f392ffcaeddf62b145a757084f33d0fd841c1711677405c17f126e888d2c6d901674f8ad746fb3d8b9f416ea23f32518)
 
 # This is lovell/libimagequant (BSD-2-Clause), a fork of ImageOptim/libimagequant 2.4.1 that

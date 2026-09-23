@@ -45,6 +45,15 @@ foreach(recipe IN LISTS dep_recipes)
     list(APPEND dep_defines HAVE_DEP_${dep_define})
 endforeach()
 
+# Where the target's C library already provides their API these build nothing, so there is nothing
+# of theirs to call.
+if(NOT sessiondeps_need_libintl)
+    list(REMOVE_ITEM dep_defines HAVE_DEP_PROXY_LIBINTL)
+endif()
+if(NOT sessiondeps_need_libiconv)
+    list(REMOVE_ITEM dep_defines HAVE_DEP_LIBICONV)
+endif()
+
 list(LENGTH dep_targets dep_count)
 message(STATUS "session-deps test: building ${dep_count} dependencies")
 

@@ -1,6 +1,6 @@
 set(LIBUTF8PROC_VERSION 2.11.3)
-set(LIBUTF8PROC_MIRROR https://github.com/JuliaStrings/utf8proc/archive/refs/tags)
-set(LIBUTF8PROC_SOURCE v${LIBUTF8PROC_VERSION}.tar.gz)
+set(LIBUTF8PROC_MIRROR https://github.com/JuliaStrings/utf8proc/archive/refs/tags/v${LIBUTF8PROC_VERSION})
+set(LIBUTF8PROC_SOURCE utf8proc-${LIBUTF8PROC_VERSION}.tar.gz)
 set(LIBUTF8PROC_HASH SHA512=148701fce506d076f03497b6d085f1993eff743debad4a2f6d3cbac91e19a5c22d9938245bdb460c1b22b51842c7416c42124db7416c684ee63d622490baac0e)
 
 sessiondep_build_external(libutf8proc

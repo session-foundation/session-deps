@@ -62,6 +62,22 @@ Build settings come from promoted cache variables, not from computing your own: 
 set as `deps_foo` near the end of `StaticBuild.cmake` is promoted to `sessiondeps_foo`; add to the
 `foreach` promotion list when introducing one.
 
+`CONFIGURE_COMMAND` takes one of three forms: a literal command (the default is `./configure`),
+`DEFAULT_CMAKE` followed by `-D` options, or `DEFAULT_MESON` followed by `-D` options.  The latter
+two also supply the build and install commands, and build out-of-source.
+
+`DEFAULT_MESON` pins `--libdir=lib`, because meson otherwise honours the distro's multiarch layout
+and installs to `lib/x86_64-linux-gnu`, where `sessiondep_static_target()` does not look.  It also
+passes `--wrap-mode=nodownload`: left alone, meson resolves a missing dependency by fetching it from
+WrapDB at configure time, which would bring in code that never went through our hash-pinned
+tarballs.  Subprojects already vendored in the tarball (glib ships gvdb that way) still resolve.
+
+meson has no `--host`, so a cross build is described by a cross file, generated once in
+`StaticBuild.cmake` as `sessiondeps_meson_cross`.  Its `cpu_family` has to come from meson's own
+fixed vocabulary, which is neither cmake's spelling nor the triplet's, so `ARCH_TRIPLET` is
+translated rather than passed through; an unrecognised architecture is a fatal error rather than a
+guess.
+
 **Bump `session_deps_version` in `Deps.cmake` with any recipe change.**  When several projects in one
 build tree carry this submodule, the highest version wins and the others are ignored, so a fix in a
 copy with a stale version silently does nothing.
@@ -116,6 +132,29 @@ Windows also wants system libraries named explicitly (`ws2_32` for anything doin
 tool built for the build machine making decisions with `#if` on *its* platform while reading the
 target's settings — ICU's `pkgdata` names the data library that way and silently produces one nobody
 installs.  When a cross build misbehaves, ask which machine the deciding code was compiled for.
+
+**An optional dependency left at its default is a system library waiting to leak in.**  On a native
+build the pkg-config search path is our destdir *followed by the system's*, so that a static
+libvips can sit on a system glib.  The cost is that any recipe which leaves an optional dependency
+to autodetection can find a system copy, record it in its own `.a`, and fail the *final* link on
+symbols from a library that was never in the destdir — libtiff picked up the system `libdeflate`
+this way and the error named only `libdeflate_*`, several steps from the cause.  Set every optional
+dependency explicitly, including the ones you are turning off, and including the ones that are not
+codecs.
+
+**`--default-library=static` does not make meson link its dependencies statically.**  It governs
+what the project builds; dependency resolution still runs a plain `pkg-config --libs`, which omits
+`Requires.private` and `Libs.private` — where a static library records what it needs.  That is what
+`-Dprefer_static=true` in `DEFAULT_MESON` is for; without it libheif linked without libde265 and
+dav1d.  It also picks up `Cflags.private`, which is where a library tends to hide its Windows
+"I am static" define.
+
+**`prefer_static` hides the destdir from meson's library search.**  Dependencies with no pkg-config
+method — `intl` and `iconv` among them — end in `find_library()`, which normally runs a `-lname`
+link test that sees the `-L` in `c_link_args`.  With `prefer_static` on it runs a filesystem scan of
+the compiler's built-in directories instead, and a library installed here is simply not found.  glib
+turns it back off for this reason; a recipe whose dependencies include such a library needs the
+same.
 
 **Autotools flags can be silently inert.**  `AC_ARG_WITH` names are collected at generation time, so
 a flag whose handling sits inside a conditional is accepted and ignored with no warning

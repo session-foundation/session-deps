@@ -10,6 +10,7 @@ sessiondep_build_external(libidn2
     # Patch out building the tools because they make a compilation with -flto take a very long time:
     PATCHES libidn2-no-tools.patch
     CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} --disable-shared --disable-doc --prefix=${SESSIONDEPS_DESTDIR} --with-pic
+        --disable-nls
         "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
         "CFLAGS=${sessiondeps_CFLAGS}"
         "CXXFLAGS=${sessiondeps_CXXFLAGS}"

@@ -309,7 +309,7 @@ if(CMAKE_TOOLCHAIN_FILE)
 
     # Cross toolchain files set CMAKE_FIND_ROOT_PATH_MODE_* to ONLY, which re-roots every find_*
     # search under the toolchain's sysroot -- so one dependency looking for another it was built
-    # after (libheif for libde265 and dav1d, libtiff for libjpeg) finds nothing in the destdir and
+    # after (libheif for libde265 and dav1d) finds nothing in the destdir and
     # quietly builds without it.  Directories below CMAKE_STAGING_PREFIX are searched even in ONLY
     # mode, and toolchain files do not set it, unlike CMAKE_FIND_ROOT_PATH which they overwrite.
     # It is also where install() then puts things, which is the destdir either way.

@@ -11,7 +11,6 @@ session_dep(spng 0.7)
 session_dep(libwebp 0.6 WITH libwebpmux libwebpdemux)
 session_dep(libexif 0.6.22)
 session_dep(lcms2 2)
-session_dep(libtiff-4 4)
 session_dep(libhwy 1.0.5)
 session_dep(libheif 1.20)
 session_dep(cgif 0.2)
@@ -49,7 +48,6 @@ sessiondep_build_external(vips
       -Djpeg=enabled
       -Dspng=enabled
       -Dwebp=enabled
-      -Dtiff=enabled
       -Dheif=enabled
       -Dcgif=enabled
       -Dimagequant=enabled
@@ -60,6 +58,7 @@ sessiondep_build_external(vips
       -Dnsgif=true
       # --- everything else, explicitly off ---
       -Dpng=disabled
+      -Dtiff=disabled
       -Drsvg=disabled
       -Dmagick=disabled
       -Dmagick-module=disabled
@@ -93,7 +92,7 @@ sessiondep_build_external(vips
     DEPENDS
       sessiondep::glib-2.0 sessiondep::expat
       sessiondep::libjpeg sessiondep::spng sessiondep::libwebp sessiondep::libexif
-      sessiondep::lcms2 sessiondep::libtiff-4 sessiondep::libhwy sessiondep::libheif
+      sessiondep::lcms2 sessiondep::libhwy sessiondep::libheif
       sessiondep::cgif sessiondep::imagequant
     BUILD_BYPRODUCTS
       ${SESSIONDEPS_DESTDIR}/lib/libvips.a
@@ -106,7 +105,7 @@ sessiondep_static_target(sessiondep_ext_vips vips libvips.a
     sessiondep::expat
     sessiondep::libjpeg sessiondep::spng
     sessiondep::libwebp sessiondep::libwebpmux sessiondep::libwebpdemux
-    sessiondep::libexif sessiondep::lcms2 sessiondep::libtiff-4 sessiondep::libhwy
+    sessiondep::libexif sessiondep::lcms2 sessiondep::libhwy
     sessiondep::libheif sessiondep::cgif sessiondep::imagequant)
 
 # The C++ binding is a separate archive that calls into the C one, so it has to come first.

@@ -90,9 +90,6 @@
 #ifdef HAVE_DEP_LIBTASN1
 #include <libtasn1.h>
 #endif
-#ifdef HAVE_DEP_LIBTIFF_4
-#include <tiffio.h>
-#endif
 #ifdef HAVE_DEP_LIBUNBOUND
 #include <unbound.h>
 #endif
@@ -291,10 +288,6 @@ int main() {
 #ifdef HAVE_DEP_LIBTASN1
     std::printf("libtasn1: %s\n", asn1_check_version(nullptr));
 #endif
-#ifdef HAVE_DEP_LIBTIFF_4
-    const char* tiff_version = TIFFGetVersion();
-    std::printf("libtiff: %.*s\n", static_cast<int>(std::strcspn(tiff_version, "\n")), tiff_version);
-#endif
 #ifdef HAVE_DEP_LIBUNBOUND
     std::printf("libunbound: %s\n", ub_version());
 #endif
@@ -350,13 +343,14 @@ int main() {
         return 1;
     }
     int vips_bad = 0;
-    for (const char* op : {"jpegload", "pngload", "webpload", "gifload", "heifload", "tiffload",
+    for (const char* op : {"jpegload", "pngload", "webpload", "gifload", "heifload",
                            "jpegsave", "pngsave", "webpsave", "gifsave"})
         if (!vips_type_find("VipsOperation", op)) {
             std::fprintf(stderr, "vips: %s missing\n", op);
             vips_bad++;
         }
-    for (const char* op : {"svgload", "magickload", "pdfload", "jxlload", "openslideload"})
+    for (const char* op :
+         {"svgload", "magickload", "pdfload", "jxlload", "openslideload", "tiffload"})
         if (vips_type_find("VipsOperation", op)) {
             std::fprintf(stderr, "vips: %s present but should be disabled\n", op);
             vips_bad++;

@@ -672,9 +672,15 @@ function(sessiondep_build_external target)
         # GNUInstallDirs resolves libdir to lib64 on Fedora/openSUSE and lib/<triplet> on Debian,
         # neither of which is where sessiondep_static_target() looks.  Pin it, as the meson path
         # does with --libdir.
+        #
+        # The build type is pinned too, as the meson path does with --buildtype: with none set, cmake
+        # adds no optimisation flags at all, so a project that does not supply its own default
+        # (jpegli does not) silently builds unoptimised.  A recipe's own -DCMAKE_BUILD_TYPE comes
+        # later on the command line and overrides this.
         set(_default_cmake_args
             "-DCMAKE_INSTALL_PREFIX=${arg_PREFIX}"
-            "-DCMAKE_INSTALL_LIBDIR=lib")
+            "-DCMAKE_INSTALL_LIBDIR=lib"
+            "-DCMAKE_BUILD_TYPE=Release")
         if(sessiondeps_cmake_toolchain_args)
             list(APPEND _default_cmake_args ${sessiondeps_cmake_toolchain_args})
         endif()

@@ -3,7 +3,25 @@ set(LIBHEIF_MIRROR https://github.com/strukturag/libheif/releases/download/v${LI
 set(LIBHEIF_SOURCE libheif-${LIBHEIF_VERSION}.tar.gz)
 set(LIBHEIF_HASH SHA512=481f94d7b1a88edfcaa8218c3f07df8ed17609a7fcb79a48f42bddcc7dfb7412f4d68299808300e0c81d4d171aec9b3281922adc39bb49d94fd5b73ffcb2eb1f)
 
-session_dep(libde265 1.0)
+# HEVC (H.265), the codec inside HEIC, is covered by a large number of active patents held across
+# competing pools and independent holders, and distributing a decoder for it is where the exposure
+# lies; the HEIF container itself is not the problem.  So by default this builds AVIF (AV1, licensed
+# royalty-free) only.  This exists for people building for their own use: do not turn it on for
+# anything that is distributed.
+option(LIBHEIF_WITH_LIBDE265 "Build libheif with HEVC (HEIC) decoding via libde265; patent-encumbered, never enable for distributed builds" OFF)
+
+set(libheif_codec_deps sessiondep::dav1d)
+set(libheif_hevc_args -DWITH_LIBDE265=OFF)
+if(LIBHEIF_WITH_LIBDE265)
+    session_dep(libde265 1.0)
+    list(APPEND libheif_codec_deps sessiondep::libde265)
+    # libheif's own libde265 decoder includes de265.h, which declares the API dllimport on Windows
+    # unless told the library is static; libde265.pc says so in Cflags.private, and libheif's finder
+    # never applies it.  This replaces the CMAKE_CXX_FLAGS the toolchain arguments forward, so it
+    # restates their stdlib selection.
+    set(libheif_hevc_args -DWITH_LIBDE265=ON
+        "-DCMAKE_CXX_FLAGS=${sessiondeps_cxx_stdlib} -DLIBDE265_STATIC_BUILD")
+endif()
 session_dep(dav1d 1.0)
 
 # libheif is the container layer for both HEIC and AVIF, so turning it off removes both regardless
@@ -21,7 +39,7 @@ sessiondep_build_external(libheif
       -DENABLE_PLUGIN_LOADING=OFF
       -DWITH_EXAMPLES=OFF
       -DWITH_GDK_PIXBUF=OFF
-      -DWITH_LIBDE265=ON
+      ${libheif_hevc_args}
       -DWITH_DAV1D=ON
       -DWITH_AOM_DECODER=OFF
       -DWITH_AOM_ENCODER=OFF
@@ -42,18 +60,13 @@ sessiondep_build_external(libheif
       -DWITH_FFMPEG_DECODER=OFF
       -DWITH_UNCOMPRESSED_CODEC=OFF
       -DWITH_LIBSHARPYUV=OFF
-      # libheif's own libde265 decoder includes de265.h, which declares the API dllimport on Windows
-      # unless told the library is static; libde265.pc says so in Cflags.private, and libheif's
-      # finder never applies it.  This replaces the CMAKE_CXX_FLAGS the toolchain arguments
-      # forward, so it restates their stdlib selection.
-      "-DCMAKE_CXX_FLAGS=${sessiondeps_cxx_stdlib} -DLIBDE265_STATIC_BUILD"
-    DEPENDS sessiondep::libde265 sessiondep::dav1d
+    DEPENDS ${libheif_codec_deps}
     BUILD_BYPRODUCTS
       ${SESSIONDEPS_DESTDIR}/lib/libheif.a
       ${SESSIONDEPS_DESTDIR}/include/libheif/heif.h
 )
 
-sessiondep_static_simple(libheif sessiondep::libde265 sessiondep::dav1d)
+sessiondep_static_simple(libheif ${libheif_codec_deps})
 set_target_properties(sessiondep_ext_libheif PROPERTIES IMPORTED_LINK_INTERFACE_LANGUAGES CXX)
 
 # heif_export.h declares the API __declspec(dllimport) on Windows unless told the library is static.

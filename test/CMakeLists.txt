@@ -54,6 +54,10 @@ if(NOT sessiondeps_need_libiconv)
     list(REMOVE_ITEM dep_defines HAVE_DEP_LIBICONV)
 endif()
 
+if(LIBHEIF_WITH_LIBDE265)
+    list(APPEND dep_defines LIBHEIF_WITH_LIBDE265)
+endif()
+
 list(LENGTH dep_targets dep_count)
 message(STATUS "session-deps test: building ${dep_count} dependencies")
 

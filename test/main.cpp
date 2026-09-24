@@ -242,12 +242,20 @@ int main() {
 #endif
 #ifdef HAVE_DEP_LIBHEIF
     // The decoders are separate libraries that libheif only reaches through its own registry, so
-    // asking it for them is what shows libde265 and dav1d actually made it in.
+    // asking it for them is what shows dav1d (and libde265, when opted into) actually made it in.
+    // HEVC must also be *absent* by default: it is off for patent reasons, and a build that picked
+    // it up anyway is the failure worth catching.
+#ifdef LIBHEIF_WITH_LIBDE265
+    constexpr bool heif_hevc_expected = true;
+#else
+    constexpr bool heif_hevc_expected = false;
+#endif
     bool heif_hevc = heif_have_decoder_for_format(heif_compression_HEVC);
     bool heif_av1 = heif_have_decoder_for_format(heif_compression_AV1);
-    std::printf("libheif: %s, HEVC decoder %s, AV1 decoder %s\n", heif_get_version(),
-                heif_hevc ? "yes" : "NO", heif_av1 ? "yes" : "NO");
-    if (!heif_hevc || !heif_av1)
+    std::printf("libheif: %s, HEVC decoder %s (expected %s), AV1 decoder %s\n", heif_get_version(),
+                heif_hevc ? "yes" : "no", heif_hevc_expected ? "yes" : "no",
+                heif_av1 ? "yes" : "NO");
+    if (heif_hevc != heif_hevc_expected || !heif_av1)
         return 1;
 #endif
 #ifdef HAVE_DEP_LIBHWY

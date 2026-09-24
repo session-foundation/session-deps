@@ -49,6 +49,13 @@ used.  This option has no effect when the global `SESSIONDEPS_STATIC` option is 
 
 Enabled or disable LTO for static dependency builds, where supported.
 
+### `LIBHEIF_WITH_LIBDE265=OFF/ON`
+
+Off by default, so a static libheif decodes AVIF (AV1) but not HEIC (HEVC).  HEVC is covered by
+actively licensed patents, so this is only for people building for their own use: **never enable it
+for a build that is distributed.**  It has no effect on a system libheif, whose codec support is
+whatever the system package provides.
+
 ### `DEPS_FORCE_SUBMODULE=ON`
 
 This flag forces all `sessiondep_or_submodule` calls to take the submodule route, bypassing the

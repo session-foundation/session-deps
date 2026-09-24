@@ -20,6 +20,7 @@ not say.
 | `deps/StaticBuild.cmake` | shared machinery: toolchain flags, the `sessiondep_*` functions |
 | `deps/PKG.cmake` | one recipe per package, named for its pkg-config module |
 | `deps/patches/` | patches applied to upstream sources |
+| `deps/extra/` | other files a recipe uses: helper scripts, vendored files; outside the recipe glob |
 | `check/PKG.cmake` | optional veto on an otherwise acceptable system package |
 | `test/` | a project that builds every recipe and uses each one; what CI runs |
 | `.drone.jsonnet` | CI pipelines |

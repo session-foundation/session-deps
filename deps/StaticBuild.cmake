@@ -661,6 +661,11 @@ function(sessiondep_build_external target)
     endif()
     set(build_def_BUILD_BYPRODUCTS ${SESSIONDEPS_DESTDIR}/lib/${_sdep_lib_prefix}___TARGET___.a ${SESSIONDEPS_DESTDIR}/include/${_sdep_base_name}.h)
 
+    # Recorded before the defaults are filled in below, so that DEFAULT_CMAKE can tell a recipe's
+    # own build/install command apart from the autotools default it would otherwise ignore.
+    set(_explicit_build ${arg_BUILD_COMMAND})
+    set(_explicit_install ${arg_INSTALL_COMMAND})
+
     foreach(o ${options})
         if(NOT DEFINED arg_${o})
             set(arg_${o} ${build_def_${o}})
@@ -688,8 +693,17 @@ function(sessiondep_build_external target)
             list(APPEND _default_cmake_args ${sessiondeps_cmake_osx_args})
         endif()
         string(REGEX REPLACE "^DEFAULT_CMAKE(;?)" "CMAKE_ARGS;${_default_cmake_args}\\1" configure "${arg_CONFIGURE_COMMAND}")
+        # Empty means ExternalProject's own `cmake --build` and `cmake --install`; a recipe whose
+        # project cannot be built or installed that way (jpegli: the library is EXCLUDE_FROM_ALL and
+        # has no install rule) supplies its own.
         set(build "")
         set(install "")
+        if(_explicit_build)
+            set(build BUILD_COMMAND ${_explicit_build})
+        endif()
+        if(_explicit_install)
+            set(install INSTALL_COMMAND ${_explicit_install})
+        endif()
         # CMake projects build out-of-source, and some (utf8proc) refuse in-source outright.
         set(in_source OFF)
     elseif(arg_CONFIGURE_COMMAND MATCHES "^DEFAULT_MESON")

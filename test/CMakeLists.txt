@@ -58,6 +58,16 @@ if(LIBHEIF_WITH_LIBDE265)
     list(APPEND dep_defines LIBHEIF_WITH_LIBDE265)
 endif()
 
+# jpegli's headers put its own copy of <jpeglib.h> ahead of libjpeg-turbo's, so its call is compiled
+# on its own: linked privately here, jpegli's include directory never reaches main.cpp.
+if(TARGET sessiondep::jpegli)
+    list(REMOVE_ITEM dep_targets sessiondep::jpegli)
+    add_library(deps-test-jpegli STATIC jpegli.cpp)
+    target_link_libraries(deps-test-jpegli PRIVATE sessiondep::jpegli)
+    target_compile_features(deps-test-jpegli PRIVATE cxx_std_20)
+    list(APPEND dep_targets deps-test-jpegli)
+endif()
+
 list(LENGTH dep_targets dep_count)
 message(STATUS "session-deps test: building ${dep_count} dependencies")
 

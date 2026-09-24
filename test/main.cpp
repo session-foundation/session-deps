@@ -138,6 +138,10 @@
 #include <zlib.h>
 #endif
 
+#ifdef HAVE_DEP_JPEGLI
+bool test_jpegli();  // jpegli.cpp
+#endif
+
 #ifdef HAVE_DEP_CGIF
 // cgif has no version call and always writes somewhere; this is where.
 static int cgif_discard(void*, const uint8_t*, const size_t) {
@@ -270,6 +274,10 @@ int main() {
 #endif
 #ifdef HAVE_DEP_LIBIDN2
     std::printf("libidn2: %s\n", idn2_check_version(nullptr));
+#endif
+#ifdef HAVE_DEP_JPEGLI
+    if (!test_jpegli())
+        return 1;
 #endif
 #ifdef HAVE_DEP_LIBJPEG
     jpeg_compress_struct jpeg_cinfo;

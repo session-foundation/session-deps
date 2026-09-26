@@ -1,0 +1,44 @@
+Clear the epoll read-ready state when a TLS handshake would block
+
+In epoll mode a connection's read-ready bit is set by an EPOLLIN event and
+cleared only by the TLS record-read adapter when gnutls_record_recv()
+returns GNUTLS_E_AGAIN.  While a connection is still handshaking that
+adapter is never reached: MHD_connection_handle_read() calls
+gnutls_handshake() first, which does its own recv(), gets EAGAIN, and
+MHD_run_tls_handshake_() returns with the bit still set.  The connection
+therefore stays on the epoll ready list, which makes the daemon poll with a
+zero timeout, and every pass calls gnutls_handshake() again.  On a TLS 1.3
+server that recomputes the expected Finished (transcript hash, HKDF, HMAC)
+on each call.  The spin lasts one client round trip for every handshake,
+and for a client that never completes the handshake it lasts until the
+connection timeout.
+
+GNUTLS_E_AGAIN from gnutls_handshake() means its pull or push function got
+EAGAIN, so the socket is drained (or its send buffer is full) until epoll
+reports it again; clear the bit for the direction it is waiting on, as the
+record adapter already does for reads.
+
+--- a/src/microhttpd/connection_https.c
++++ b/src/microhttpd/connection_https.c
+@@ -156,6 +156,21 @@ MHD_run_tls_handshake_ (struct MHD_Connection *connection)
+     if ( (GNUTLS_E_AGAIN == ret) ||
+          (GNUTLS_E_INTERRUPTED == ret) )
+     {
++#ifdef EPOLL_SUPPORT
++      /* gnutls got EAGAIN from the socket in the direction it reports, so
++       * nothing more can happen there until epoll signals it again.  Leaving
++       * the ready bit set keeps the connection on the eready list, which
++       * makes the daemon busy-wait, re-running the handshake on every pass. */
++      if (GNUTLS_E_AGAIN == ret)
++      {
++        if (0 == gnutls_record_get_direction (connection->tls_session))
++          connection->epoll_state &=
++            ~((enum MHD_EpollState) MHD_EPOLL_STATE_READ_READY);
++        else
++          connection->epoll_state &=
++            ~((enum MHD_EpollState) MHD_EPOLL_STATE_WRITE_READY);
++      }
++#endif /* EPOLL_SUPPORT */
+       connection->tls_state = MHD_TLS_CONN_HANDSHAKING;
+       /* handshake not done */
+       return false;

@@ -44,6 +44,10 @@ sessiondep_build_external(libmicrohttpd
     "CFLAGS=${sessiondeps_CFLAGS}" "CXXFLAGS=${sessiondeps_CXXFLAGS}"
     ${sessiondeps_cross_rc}
     DEPENDS sessiondep::gnutls
+    # In epoll mode a TLS handshake that has to wait for the client leaves the connection marked
+    # read-ready, so the daemon busy-waits and re-runs the handshake until the client's next
+    # flight arrives (or the connection times out).  Present through at least 1.0.10.
+    PATCHES libmicrohttpd-epoll-tls-handshake-spin.patch
 )
 
 sessiondep_static_simple(libmicrohttpd sessiondep::gnutls)

@@ -98,7 +98,9 @@ local android_pipeline(abi, jobs=6) = linux_pipeline(
   jobs=jobs,
   cmake_extra='-DCMAKE_TOOLCHAIN_FILE=' + android_ndk + '/build/cmake/android.toolchain.cmake '
               + '-DANDROID_ABI=' + abi + ' -DANDROID_ARM_MODE=arm -DANDROID_PLATFORM=android-23 '
-              + '-DANDROID_STL=c++_static ',
+              + '-DANDROID_STL=c++_static '
+              // OpenSSL has to be told its target when cross-compiling, and only mingw is mapped.
+              + '-DSKIP_DEPS=libssl ',
   run_test='',
 );
 
@@ -110,7 +112,9 @@ local ios_pipeline(name, platform, jobs=6, allow_fail=false) = mac_pipeline(
   // fetch can only retrieve if the server happens to allow fetching arbitrary revisions.
   setup=['git submodule update --init --recursive'],
   cmake_extra='-DCMAKE_TOOLCHAIN_FILE=../external/ios-cmake/ios.toolchain.cmake -DPLATFORM='
-              + platform + ' -DDEPLOYMENT_TARGET=13 -DENABLE_BITCODE=OFF ',
+              + platform + ' -DDEPLOYMENT_TARGET=13 -DENABLE_BITCODE=OFF '
+              // OpenSSL has to be told its target when cross-compiling, and only mingw is mapped.
+              + '-DSKIP_DEPS=libssl ',
   run_test='',
   allow_fail=allow_fail,
 );

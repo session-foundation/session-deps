@@ -78,6 +78,13 @@ fixed vocabulary, which is neither cmake's spelling nor the triplet's, so `ARCH_
 translated rather than passed through; an unrecognised architecture is a fatal error rather than a
 guess.
 
+**OpenSSL does not take `--host`.**  It picks its target from `POSIX::uname()` with no environment
+override, so a cross build must name the target (`./Configure mingw64`) and pass the cross `AR` and
+`RANLIB`; `SYSTEM=MINGW64` was an OpenSSL 1.x thing and has been inert since 3.0.  Its archives are
+also rewritten after installation (`deps/extra/libssl-hide-internals.cmake`) so that only the public API is
+global: its assembly shares global names with gnutls's copy of the same code, and a static archive
+has no version script to hide them.
+
 **Bump `session_deps_version` in `Deps.cmake` with any recipe change.**  When several projects in one
 build tree carry this submodule, the highest version wins and the others are ignored, so a fix in a
 copy with a stale version silently does nothing.

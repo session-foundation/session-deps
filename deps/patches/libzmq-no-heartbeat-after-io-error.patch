@@ -1,0 +1,83 @@
+Stop the heartbeat paths writing to an engine that has hit an I/O error
+
+When a stream engine's inbound pipe is full (the application is not
+draining the socket as fast as one peer sends), it stops polling for input
+and waits for the session to call restart_input ().  If the connection dies
+in that window the poller still delivers EPOLLERR/EPOLLHUP as in_event (),
+which removes the fd and sets _io_error, but deliberately keeps the engine
+alive so that restart_input () can deliver what was already decoded before
+tearing it down.  That state is absorbing: the flag is never cleared, and
+every exit from it destroys the engine.
+
+Two things can still try to write through that dead engine, and both land in
+out_event (), which asserts !_io_error and aborts the process:
+
+  - the heartbeat interval timer, which keeps firing since only unplug ()
+    cancels it: "Assertion failed: !_io_error (src/stream_engine_base.cpp:331)"
+    from timer_event ();
+
+  - a PING decoded during restart_input (), whose PONG reply goes straight
+    to out_event () (upstream issue #4364).
+
+Cancel the interval timer at the point the engine enters that state, and
+skip the PONG when the connection is already gone.  This keeps the
+out_event () invariant intact rather than relaxing the assertion, which
+upstream rejected in PR #4852.  Reported upstream as #4841/#4842; present in
+every release through 4.3.5 and in master.
+
+--- a/src/stream_engine_base.hpp
++++ b/src/stream_engine_base.hpp
+@@ -175,8 +175,13 @@
+
+     msg_t _tx_msg;
+
++  protected:
++    //  Set once the connection is gone while input was stopped; the engine
++    //  then only waits for restart_input () to deliver what it already
++    //  decoded before erroring out, and nothing may be written any more.
+     bool _io_error;
+
++  private:
+     //  The session this engine is attached to.
+     zmq::session_base_t *_session;
+
+--- a/src/stream_engine_base.cpp
++++ b/src/stream_engine_base.cpp
+@@ -247,6 +247,16 @@
+     if (_input_stopped) {
+         rm_fd (_handle);
+         _io_error = true;
++
++        //  The engine now lives on only until restart_input () has pushed
++        //  what is already decoded into the pipe, after which it errors out.
++        //  Nothing can be written in the meantime, so the heartbeat interval
++        //  timer must not fire: its out_event () call would trip the
++        //  !_io_error assertion.
++        if (_has_heartbeat_timer) {
++            cancel_timer (heartbeat_ivl_timer_id);
++            _has_heartbeat_timer = false;
++        }
+         return true; // TODO or return false in this case too?
+     }
+
+--- a/src/zmtp_engine.cpp
++++ b/src/zmtp_engine.cpp
+@@ -522,9 +522,15 @@
+                     static_cast<uint8_t *> (msg_->data ()) + ping_ttl_len,
+                     context_len);
+
+-        _next_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
+-          &zmtp_engine_t::produce_pong_message);
+-        out_event ();
++        //  A PING can still be decoded from restart_input () after the
++        //  connection is already gone (_io_error set while input was
++        //  stopped); the reply cannot be sent, and out_event () must not be
++        //  entered in that state.
++        if (!_io_error) {
++            _next_msg = static_cast<int (stream_engine_base_t::*) (msg_t *)> (
++              &zmtp_engine_t::produce_pong_message);
++            out_event ();
++        }
+     }
+
+     return 0;

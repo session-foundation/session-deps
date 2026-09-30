@@ -207,16 +207,24 @@ if(APPLE AND CMAKE_CROSSCOMPILING)
     endif()
 
     # CMake-based deps (built via DEFAULT_CMAKE) don't use CFLAGS/CXXFLAGS, so pass the target arch
-    # (and sysroot/deployment target) to their sub-cmake instead.
+    # to their sub-cmake instead; the sysroot and deployment target follow below.
     set(deps_cmake_osx_args "-DCMAKE_OSX_ARCHITECTURES=${apple_arch}")
+elseif(deps_cross_host STREQUAL "" AND CMAKE_LIBRARY_ARCHITECTURE)
+    set(deps_cross_host "--build=${CMAKE_LIBRARY_ARCHITECTURE}")
+endif()
+
+# On every Apple build, native as well as cross: a sub-cmake left to itself targets the SDK's own
+# macOS version rather than our deployment target, so the CMake-based deps of a native macOS build
+# were built for whatever the build machine's SDK was (15.0 on a current Xcode) and linked with a
+# warning into something that cannot run on anything older.  Autotools and meson deps get the same
+# settings through deps_CFLAGS, below.
+if(APPLE)
     if(CMAKE_OSX_SYSROOT)
         list(APPEND deps_cmake_osx_args "-DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}")
     endif()
     if(CMAKE_OSX_DEPLOYMENT_TARGET)
         list(APPEND deps_cmake_osx_args "-DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}")
     endif()
-elseif(deps_cross_host STREQUAL "" AND CMAKE_LIBRARY_ARCHITECTURE)
-    set(deps_cross_host "--build=${CMAKE_LIBRARY_ARCHITECTURE}")
 endif()
 
 set(deps_CFLAGS "-O2")

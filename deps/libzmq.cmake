@@ -6,6 +6,11 @@ set(LIBZMQ_HASH SHA512=a71d48aa977ad8941c1609947d8db2679fc7a951e4cd0c3a1127ae026
 
 session_dep(libsodium 1.0.17)
 
+# libsodium is often a system library even when libzmq is built here (oxen-mq builds libzmq
+# statically by default), so configure finds it through pkg-config with our destdir prepended
+# (PKG_CONFIG_PATH) rather than substituted, picking up whichever libsodium sessiondep::libsodium
+# resolved to.  Pointing it at the destdir instead fails wherever the system copy isn't on the
+# compiler's default include path, such as MacPorts' /opt/local.
 sessiondep_build_external(libzmq
     DEPENDS sessiondep::libsodium
     # With heartbeats enabled, a connection that dies while its receive pipe is full (the socket
@@ -17,7 +22,7 @@ sessiondep_build_external(libzmq
       --without-pgm --without-norm --without-vmci --without-docs --with-pic --disable-Werror --disable-libbsd
       "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
       "CFLAGS=${sessiondeps_CFLAGS} -fstack-protector" "CXXFLAGS=${sessiondeps_CXXFLAGS} -fstack-protector"
-      "sodium_CFLAGS=-I${SESSIONDEPS_DESTDIR}/include" "sodium_LIBS=-L${SESSIONDEPS_DESTDIR}/lib -lsodium"
+      "PKG_CONFIG_PATH=${SESSIONDEPS_DESTDIR}/lib/pkgconfig" "PKG_CONFIG=pkg-config"
 )
 
 set(extra_deps)

@@ -30,6 +30,9 @@
 #ifdef HAVE_DEP_GNUTLS
 #include <gnutls/gnutls.h>
 #endif
+#ifdef HAVE_DEP_GMP
+#include <gmp.h>
+#endif
 #ifdef HAVE_DEP_ICU_IO
 #include <unicode/ucol.h>
 #include <unicode/ustdio.h>
@@ -55,9 +58,6 @@
 #endif
 #ifdef HAVE_DEP_LIBFFI
 #include <ffi.h>
-#endif
-#ifdef HAVE_DEP_LIBGMP
-#include <gmp.h>
 #endif
 #ifdef HAVE_DEP_LIBHEIF
 #include <libheif/heif.h>
@@ -190,6 +190,9 @@ int main() {
 #ifdef HAVE_DEP_GNUTLS
     std::printf("gnutls: %s\n", gnutls_check_version(nullptr));
 #endif
+#ifdef HAVE_DEP_GMP
+    std::printf("gmp: %s\n", gmp_version);
+#endif
 #ifdef HAVE_DEP_ICU_IO
     // One call each into icuuc, icui18n and icuio, which are three separate archives.
     UFILE* icu_out = u_finit(stdout, nullptr, nullptr);
@@ -240,9 +243,6 @@ int main() {
                 ffi_prep_cif(&ffi_cif_int, FFI_DEFAULT_ABI, 1, &ffi_type_sint, ffi_args) == FFI_OK
                         ? "ok"
                         : "failed");
-#endif
-#ifdef HAVE_DEP_LIBGMP
-    std::printf("libgmp: %s\n", gmp_version);
 #endif
 #ifdef HAVE_DEP_LIBHEIF
     // The decoders are separate libraries that libheif only reaches through its own registry, so

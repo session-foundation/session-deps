@@ -1,10 +1,10 @@
-set(LIBGMP_VERSION 6.3.0)
-set(LIBGMP_MIRROR https://gmplib.org/download/gmp)
-set(LIBGMP_SOURCE gmp-${LIBGMP_VERSION}.tar.xz)
-set(LIBGMP_HASH SHA512=e85a0dab5195889948a3462189f0e0598d331d3457612e2d3350799dba2e244316d256f8161df5219538eb003e4b5343f989aaa00f96321559063ed8c8f29fd2)
+set(GMP_VERSION 6.3.0)
+set(GMP_MIRROR https://gmplib.org/download/gmp)
+set(GMP_SOURCE gmp-${GMP_VERSION}.tar.xz)
+set(GMP_HASH SHA512=e85a0dab5195889948a3462189f0e0598d331d3457612e2d3350799dba2e244316d256f8161df5219538eb003e4b5343f989aaa00f96321559063ed8c8f29fd2)
 
 
-sessiondep_build_external(libgmp
+sessiondep_build_external(gmp
     # These two patches are applied to gmplib upstream (and come via the Debian package):
     PATCHES gmplib-fix-acinclude-m4-for-gcc-15.patch gmplib-trust-vsprintf-return.patch
     CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} --disable-shared --prefix=${SESSIONDEPS_DESTDIR} --with-pic
@@ -15,4 +15,4 @@ sessiondep_build_external(libgmp
         CC_FOR_BUILD=cc
         CPP_FOR_BUILD=cpp
 )
-sessiondep_static_simple(libgmp)
+sessiondep_static_simple(gmp)

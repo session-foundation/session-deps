@@ -61,4 +61,9 @@ if(WIN32)
     target_link_libraries(sessiondep_ext_gnutls INTERFACE ws2_32 ncrypt crypt32 iphlpapi)
     # See GNUTLS gitlab issue 1117:
     target_compile_definitions(sessiondep_ext_gnutls INTERFACE GNUTLS_INTERNAL_BUILD)
+elseif(APPLE)
+    # gnutls's own gnutls.pc lists these in Libs.private on darwin: the system trust store code
+    # (lib/system/certs.c) calls into Security and CoreFoundation, and gnutls's library constructor
+    # references it, so any static link that uses gnutls at all needs them.
+    target_link_libraries(sessiondep_ext_gnutls INTERFACE "-framework Security" "-framework CoreFoundation")
 endif()

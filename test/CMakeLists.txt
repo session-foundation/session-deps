@@ -87,3 +87,14 @@ if(MINGW)
     # them makes this runnable (under wine, or on Windows) without arranging a DLL search path.
     target_link_options(deps-test PRIVATE -static)
 endif()
+
+# deps-test links everything on one line, so a recipe missing a system library still links whenever
+# another recipe brings that library in: gnutls went without the Apple frameworks it needs because
+# libcurl's recipe already adds them.  Most of our projects link gnutls without curl (through
+# libquic), so check that link on its own; building it is the test.
+if(TARGET sessiondep::gnutls)
+    add_executable(deps-test-gnutls main.cpp)
+    target_link_libraries(deps-test-gnutls PRIVATE sessiondep::gnutls)
+    target_compile_definitions(deps-test-gnutls PRIVATE HAVE_DEP_GNUTLS)
+    target_compile_features(deps-test-gnutls PRIVATE cxx_std_20)
+endif()

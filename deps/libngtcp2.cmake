@@ -6,7 +6,11 @@ set(LIBNGTCP2_HASH SHA512=b5ebf0a4248a13b9231ac0b6353adbf6634a19bb57db3cf3994774
 
 session_dep(gnutls 3.7.2)
 
+# Upstream fixes merged after 1.25.0 (which 1.26.0 will include); the server-peer-ip-change-pmtu
+# one is why consumers require a system ngtcp2 of at least 1.26.0 rather than 1.25.0.
 sessiondep_build_external(libngtcp2
+    PATCHES libngtcp2-fix-pktlen-check.patch libngtcp2-fix-fallback-dcid-retirement.patch
+    libngtcp2-server-peer-ip-change-pmtu.patch
     CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} --prefix=${SESSIONDEPS_DESTDIR} --with-pic
     --with-sysroot=${SESSIONDEPS_DESTDIR}
     --enable-lib-only --disable-shared --enable-static

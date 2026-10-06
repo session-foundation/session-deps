@@ -13,3 +13,9 @@ sessiondep_build_external(libunistring
     BUILD_BYPRODUCTS ${SESSIONDEPS_DESTDIR}/lib/libunistring.a ${SESSIONDEPS_DESTDIR}/include/unistr.h)
 
 sessiondep_static_simple(libunistring)
+
+if(APPLE)
+    # libunistring links $(LTLIBICONV), and Apple's iconv is not part of libSystem but its own
+    # libiconv.dylib, so a static link has to name it.
+    target_link_libraries(sessiondep_ext_libunistring INTERFACE iconv)
+endif()

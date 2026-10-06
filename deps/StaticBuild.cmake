@@ -439,13 +439,18 @@ if(CMAKE_CROSSCOMPILING)
         set(_sdep_meson_system darwin)
         # meson cannot tell the Apple platforms apart from `darwin` alone, and glib asks which one
         # it is building for (host_machine.subsystem()), which is a hard error when unset.  Named
-        # in meson's vocabulary, from the SDK the toolchain file selected.
+        # in meson's vocabulary, from the SDK the toolchain file selected.  A macOS cross-arch build
+        # (arm64 <-> x86_64) has no toolchain file and so no SDK_NAME, but there cmake's own Darwin
+        # system name already says macOS: the other Apple platforms have system names of their own.
         set(_sdep_meson_subsystems
             macosx=macos iphoneos=ios iphonesimulator=ios-simulator
             appletvos=tvos appletvsimulator=tvos-simulator
             watchos=watchos watchsimulator=watchos-simulator
             xros=visionos xrsimulator=visionos-simulator)
         set(_sdep_meson_subsystem "")
+        if(CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND NOT SDK_NAME)
+            set(_sdep_meson_subsystem macos)
+        endif()
         foreach(pair IN LISTS _sdep_meson_subsystems)
             if(pair MATCHES "^([a-z]+)=(.*)$" AND CMAKE_MATCH_1 STREQUAL "${SDK_NAME}")
                 set(_sdep_meson_subsystem "${CMAKE_MATCH_2}")

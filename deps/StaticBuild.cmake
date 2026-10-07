@@ -125,6 +125,13 @@ if(CMAKE_CROSSCOMPILING)
     if (ARCH_TRIPLET MATCHES mingw AND CMAKE_RC_COMPILER)
         set(deps_cross_rc "WINDRES=${CMAKE_RC_COMPILER}")
     endif()
+    # Every autoconf configure line splices this list, so the cross archiver goes here too.  Left to
+    # itself, configure looks for `<host>-ar`, which the NDK no longer ships, and falls back to the
+    # build machine's `ar`: on a mac that writes target objects into an archive with no usable
+    # symbol table (libsodium.a comes out at 96 bytes) and the failure only shows at final link.
+    if(CMAKE_AR AND CMAKE_RANLIB)
+        list(APPEND deps_cross_rc "AR=${CMAKE_AR}" "RANLIB=${CMAKE_RANLIB}")
+    endif()
 endif()
 if(ANDROID)
     set(android_compiler_suffix linux-android23)

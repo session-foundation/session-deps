@@ -474,6 +474,7 @@ if(CMAKE_CROSSCOMPILING)
     # meson matches cpu_family against its own fixed vocabulary, which is neither cmake's spelling
     # nor the triplet's, so the triplet gets translated rather than passed through.
     set(_sdep_meson_cpu "${_sdep_target_cpu}")
+    set(_sdep_meson_endian little)
     if(_sdep_meson_cpu MATCHES "^(x86_64|amd64)$")
         set(_sdep_meson_cpu_family x86_64)
     elseif(_sdep_meson_cpu MATCHES "^i[3-6]86$")
@@ -482,6 +483,9 @@ if(CMAKE_CROSSCOMPILING)
         set(_sdep_meson_cpu_family aarch64)
     elseif(_sdep_meson_cpu MATCHES "^arm")
         set(_sdep_meson_cpu_family arm)
+    elseif(_sdep_meson_cpu STREQUAL "s390x")
+        set(_sdep_meson_cpu_family s390x)
+        set(_sdep_meson_endian big)
     else()
         message(FATAL_ERROR "Don't know how to name cpu '${_sdep_meson_cpu}' for a meson cross file")
     endif()
@@ -519,7 +523,7 @@ ${_sdep_meson_extra_bins}
 system = '${_sdep_meson_system}'
 cpu_family = '${_sdep_meson_cpu_family}'
 cpu = '${_sdep_meson_cpu}'
-endian = 'little'
+endian = '${_sdep_meson_endian}'
 ${_sdep_meson_host_extra}")
 endif()
 

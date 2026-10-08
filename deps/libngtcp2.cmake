@@ -18,7 +18,7 @@ sessiondep_build_external(libngtcp2
     --without-libbrotlienc --without-libbrotlidec --without-libev --without-libnghttp3
     # A static ngtcp2 is needed wherever the system's is too old, which can perfectly well be on a
     # system gnutls, so configure has to see the system .pc files as well as ours.
-    "PKG_CONFIG_LIBDIR=${sessiondeps_pkg_config_libdir}" "PKG_CONFIG=pkg-config"
+    ${sessiondeps_pkg_config_env}
     "CPPFLAGS=-I${SESSIONDEPS_DESTDIR}/include" "LDFLAGS=${sessiondeps_ldflags}"
     "CC=${sessiondeps_cc}" "CXX=${sessiondeps_cxx}"
     "CFLAGS=${sessiondeps_CFLAGS}" "CXXFLAGS=${sessiondeps_CXXFLAGS}"

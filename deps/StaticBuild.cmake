@@ -423,6 +423,22 @@ if(NOT CMAKE_CROSSCOMPILING)
     endif()
 endif()
 
+# The same for a recipe running pkg-config from its own configure, as the variable assignments to
+# pass it.  A cross build that falls back to building one dependency can still see system packages
+# when its toolchain names a pkg-config for the target triplet -- Debian multiarch's
+# `s390x-linux-gnu-pkg-config`, say -- because that one searches the target's directories.  It
+# reports the build machine's as its pc_path all the same, so they cannot be written into
+# PKG_CONFIG_LIBDIR; ours go in PKG_CONFIG_PATH instead, which is searched ahead of them.
+#
+# Not for BUILD_STATIC_DEPS: everything is built here then, and a system package found this way is
+# an optional dependency leaking into what was meant to be fully static.
+set(deps_pkg_config_env "PKG_CONFIG=pkg-config" "PKG_CONFIG_LIBDIR=${deps_pkg_config_libdir}")
+if(CMAKE_CROSSCOMPILING AND NOT BUILD_STATIC_DEPS AND ARCH_TRIPLET
+        AND PKG_CONFIG_EXECUTABLE MATCHES "(^|/)${ARCH_TRIPLET}-pkg-config$")
+    set(deps_pkg_config_env "PKG_CONFIG=${PKG_CONFIG_EXECUTABLE}"
+        "PKG_CONFIG_PATH=${SESSIONDEPS_DESTDIR}/lib/pkgconfig")
+endif()
+
 # Cross toolchain files are not required to set CMAKE_SYSTEM_PROCESSOR, and none of the mingw ones
 # in use across these projects do.  cmake leaves it empty rather than guessing, which most
 # dependencies never notice -- but libjpeg-turbo runs string(TOLOWER) on it during CPU detection and
@@ -532,7 +548,8 @@ endif()
 foreach(var IN ITEMS
         cc cxx CFLAGS CXXFLAGS cxx_stdlib ldflags make patch cross_host raw_cross_host cross_rc
         android_machine cmake_osx_args cmake_toolchain_args
-        meson ninja meson_missing meson_cross pkg_config_libdir no_x86_asm need_libintl need_libiconv)
+        meson ninja meson_missing meson_cross pkg_config_libdir pkg_config_env no_x86_asm need_libintl
+        need_libiconv)
     if(DEFINED deps_${var})
         set(sessiondeps_${var} "${deps_${var}}" CACHE INTERNAL "" FORCE)
     endif()

@@ -723,10 +723,14 @@ function(sessiondep_build_external target)
         # adds no optimisation flags at all, so a project that does not supply its own default
         # (jpegli does not) silently builds unoptimised.  A recipe's own -DCMAKE_BUILD_TYPE comes
         # later on the command line and overrides this.
+        #
+        # PIC because these archives end up inside shared objects; a PIE-default compiler hides a
+        # missing one until that link.
         set(_default_cmake_args
             "-DCMAKE_INSTALL_PREFIX=${arg_PREFIX}"
             "-DCMAKE_INSTALL_LIBDIR=lib"
-            "-DCMAKE_BUILD_TYPE=Release")
+            "-DCMAKE_BUILD_TYPE=Release"
+            "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
         if(sessiondeps_cmake_toolchain_args)
             list(APPEND _default_cmake_args ${sessiondeps_cmake_toolchain_args})
         endif()

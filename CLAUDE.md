@@ -12,6 +12,13 @@ Apple SDK check that compiles and links can still be broken at runtime without a
 package, and `check/PKG.cmake` system-package rejection.  Read it first; this file is what it does
 not say.
 
+## Required for every recipe PR
+
+**A branch that changes a recipe, a patch, or `StaticBuild.cmake` must bump `session_deps_version` in
+`Deps.cmake` before it is merged: once per branch, not once per commit.**  When several projects in
+one build tree carry this submodule, the highest version wins and the others are ignored, so a fix
+in a copy with a stale version silently does nothing.
+
 ## Layout
 
 | path | what |
@@ -90,10 +97,6 @@ override, so a cross build must name the target (`./Configure mingw64`) and pass
 also rewritten after installation (`deps/extra/libssl-hide-internals.cmake`) so that only the public API is
 global: its assembly shares global names with gnutls's copy of the same code, and a static archive
 has no version script to hide them.
-
-**Bump `session_deps_version` in `Deps.cmake` with any recipe change.**  When several projects in one
-build tree carry this submodule, the highest version wins and the others are ignored, so a fix in a
-copy with a stale version silently does nothing.
 
 ## Patches
 

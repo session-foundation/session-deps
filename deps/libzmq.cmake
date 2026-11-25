@@ -16,7 +16,10 @@ sessiondep_build_external(libzmq
     # With heartbeats enabled, a connection that dies while its receive pipe is full (the socket
     # owner not draining it) leaves an engine whose heartbeat timer still fires and aborts the
     # process on an assertion.  Present in every release through 4.3.5 (libzmq #4364, #4842).
-    PATCHES libzmq-no-heartbeat-after-io-error.patch
+    #
+    # 4.3.5 also uses std::nothrow without including <new>, which fails to compile with libc++ 23.
+    # Fixed upstream in 2e8a6ccb, not yet in a release.
+    PATCHES libzmq-no-heartbeat-after-io-error.patch libzmq-include-new-for-nothrow.patch
     CONFIGURE_COMMAND ./configure ${sessiondeps_cross_host} --prefix=${SESSIONDEPS_DESTDIR} --enable-static --disable-shared
       --disable-curve-keygen --enable-curve --disable-drafts --disable-libunwind --with-libsodium
       --without-pgm --without-norm --without-vmci --without-docs --with-pic --disable-Werror --disable-libbsd

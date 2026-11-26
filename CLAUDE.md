@@ -162,8 +162,10 @@ codecs.
 what the project builds; dependency resolution still runs a plain `pkg-config --libs`, which omits
 `Requires.private` and `Libs.private` — where a static library records what it needs.  That is what
 `-Dprefer_static=true` in `DEFAULT_MESON` is for; without it libheif linked without libde265 and
-dav1d.  It also picks up `Cflags.private`, which is where a library tends to hide its Windows
-"I am static" define.
+dav1d.  It does **not** reliably pick up `Cflags.private`, which is where a library tends to hide
+its Windows "I am static" define: meson only passes `--static` for compile flags from 1.11 on, and
+CI images carry older ones (Debian trixie's is 1.7.0).  A define a meson consumer needs goes in the
+public `Cflags`; `libheif-pc-static-cflags.patch` moves libheif's there.
 
 **`prefer_static` hides the destdir from meson's library search.**  Dependencies with no pkg-config
 method — `intl` and `iconv` among them — end in `find_library()`, which normally runs a `-lname`

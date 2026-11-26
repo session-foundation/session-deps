@@ -33,6 +33,7 @@ session_dep(dav1d 1.0)
 # ENABLE_PLUGIN_LOADING must be off for a static build: with it on, libheif resolves its codec
 # backends as dlopen()ed shared objects at runtime, which a statically linked consumer never finds.
 sessiondep_build_external(libheif
+    PATCHES libheif-pc-static-cflags.patch
     CONFIGURE_COMMAND DEFAULT_CMAKE
       -DBUILD_SHARED_LIBS=OFF
       -DBUILD_TESTING=OFF
@@ -70,7 +71,7 @@ sessiondep_static_simple(libheif ${libheif_codec_deps})
 set_target_properties(sessiondep_ext_libheif PROPERTIES IMPORTED_LINK_INTERFACE_LANGUAGES CXX)
 
 # heif_export.h declares the API __declspec(dllimport) on Windows unless told the library is static.
-# libheif.pc says so in Cflags.private, which only a pkg-config consumer sees.
+# The patched libheif.pc tells pkg-config consumers (libvips); this tells cmake ones.
 target_compile_definitions(sessiondep_ext_libheif INTERFACE LIBHEIF_STATIC_BUILD)
 
 # A caller decoding untrusted input should set heif_context_set_security_limits() rather than

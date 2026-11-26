@@ -823,9 +823,9 @@ function(sessiondep_build_external target)
                 # meson still resolves its *dependencies* with a plain `pkg-config --libs`, which
                 # omits Requires.private and Libs.private.  Those are exactly where a static
                 # library records what it needs -- libheif.pc puts libde265 and dav1d there -- so
-                # the link fails on symbols from a dependency's dependency.  It also picks up
-                # Cflags.private, which is where a library hides its "I am static" define for
-                # Windows.
+                # the link fails on symbols from a dependency's dependency.  Only meson 1.11 and
+                # later also pick up Cflags.private, so a library's Windows "I am static" define
+                # cannot be left there (see libheif-pc-static-cflags.patch).
                 -Dprefer_static=true
                 -Dc_args=${sessiondeps_CFLAGS}
                 -Dcpp_args=${sessiondeps_CXXFLAGS}

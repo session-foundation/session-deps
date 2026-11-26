@@ -1,0 +1,20 @@
+heif_export.h declares the whole API __declspec(dllimport) on Windows unless LIBHEIF_STATIC_BUILD is
+defined, so a consumer compiled without it looks for __imp_heif_* and cannot link against the static
+libheif built here.  libheif.pc puts the define in Cflags.private, which pkg-config reports only for
+`--static --cflags`, and meson before 1.11 never passes --static when asking for compile flags,
+whatever prefer_static says.  libvips configured with meson 1.7.0 (Debian trixie's) therefore built
+heifload and heifsave against the DLL declarations, and the final mingw link failed on 74 __imp_heif_*
+symbols.
+
+Every libheif built here is static, so the define belongs in the public Cflags, where every
+pkg-config consumer sees it whatever its build system or version.
+
+--- a/libheif.pc.in
++++ b/libheif.pc.in
+@@ -11,5 +11,4 @@
+ Requires.private: @REQUIRES_PRIVATE@
+ Libs: -L${libdir} -lheif
+ Libs.private: @LIBS_PRIVATE@
+-Cflags: -I${includedir}
+-Cflags.private: -DLIBHEIF_STATIC_BUILD
++Cflags: -I${includedir} -DLIBHEIF_STATIC_BUILD
